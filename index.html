@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -341,6 +342,7 @@
     </style>
 </head>
 <body>
+    <!-- Login -->
     <div id="loginContainer" class="login-container">
         <div class="login-box">
             <div class="login-title">⚡ AirGuard 4.0</div>
@@ -358,12 +360,15 @@
         </div>
     </div>
 
+    <!-- App -->
     <div id="appContainer" class="app-container">
+        <!-- Notification -->
         <div id="notification" class="notification">
             <div class="notif-title">⚠️ Alerta de Calidad del Aire</div>
             <div id="notifText"></div>
         </div>
 
+        <!-- Header -->
         <div class="header">
             <div class="header-content">
                 <div class="app-title">⚡ AirGuard 4.0</div>
@@ -372,11 +377,13 @@
         </div>
 
         <div class="container">
+            <!-- Banner -->
             <div id="banner" class="banner disconnected">
                 <div class="dot disconnected"></div>
                 <span id="bannerText">Conectando...</span>
             </div>
 
+            <!-- Tabs -->
             <div class="tabs">
                 <button class="tab active" onclick="switchTab('dashboard')">📊 Dashboard</button>
                 <button class="tab" onclick="switchTab('adicional')">📋 Adicional</button>
@@ -385,6 +392,7 @@
                 <button class="tab" onclick="switchTab('prediccion')">🔮 Predicción</button>
             </div>
 
+            <!-- Dashboard -->
             <div id="dashboard" class="tab-content active">
                 <div class="card">
                     <div class="card-header">Variables Críticas</div>
@@ -429,6 +437,7 @@
                 </div>
             </div>
 
+            <!-- Adicional -->
             <div id="adicional" class="tab-content">
                 <div class="card">
                     <div class="card-header">Datos Adicionales del Sensor</div>
@@ -455,6 +464,7 @@
                 </div>
             </div>
 
+            <!-- Historial -->
             <div id="historial" class="tab-content">
                 <div class="card">
                     <div class="card-header">Historial de Lecturas</div>
@@ -482,6 +492,7 @@
                 </div>
             </div>
 
+            <!-- Gráficas -->
             <div id="graficas" class="tab-content">
                 <div class="card">
                     <div class="card-header">Gráficas Históricas</div>
@@ -520,6 +531,7 @@
                 </div>
             </div>
 
+            <!-- Predicción -->
             <div id="prediccion" class="tab-content">
                 <div class="card">
                     <div class="card-header">🔮 Predicciones y Análisis</div>
@@ -538,10 +550,13 @@
         </div>
     </div>
 
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- SheetJS -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 
     <script>
@@ -560,7 +575,6 @@
         const db = firebase.database();
 
         // Particle Config
-        // *** TOKEN ACTUALIZADO ***
         const PARTICLE_TOKEN = 'b1c5f069840aca199108190366a063c062937a34';
         const PARTICLE_EVENT = 'sensor_data';
 
@@ -652,63 +666,50 @@
             });
         }
 
-        // Polling Particle (CÓDIGO CORREGIDO PARA USAR BEARER TOKEN EN EL ENCABEZADO)
+        // Polling Particle
         async function startPolling() {
-            // Intenta la primera conexión y establece el intervalo de 10s
-            await fetchParticle(); 
+            updateBanner('connected', 'Conectado - Recibiendo datos');
+            fetchParticle();
             pollingInterval = setInterval(fetchParticle, 10000);
         }
 
         async function fetchParticle() {
             try {
-                // Endpoint para obtener el ÚLTIMO evento publicado. NO se pone el token en la URL.
-                // Usamos el endpoint de eventos y limitamos a 1 para el polling.
-                const URL = `https://api.particle.io/v1/events/${PARTICLE_EVENT}?limit=1`;
+                const res = await fetch(`https://api.particle.io/v1/devices/events/${PARTICLE_EVENT}?access_token=${PARTICLE_TOKEN}`);
+                const reader = res.body.getReader();
+                const decoder = new TextDecoder();
                 
-                const res = await fetch(URL, {
-                    method: 'GET',
-                    headers: {
-                        // *** USAR BEARER TOKEN EN EL ENCABEZADO ***
-                        'Authorization': `Bearer ${PARTICLE_TOKEN}`
+                while (true) {
+                    const {done, value} = await reader.read();
+                    if (done) break;
+                    
+                    const text = decoder.decode(value);
+                    const lines = text.split('\n');
+                    
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const json = JSON.parse(line.substring(6));
+                                if (json.data) {
+                                    const sensorData = JSON.parse(json.data);
+                                    console.log('📊 Particle:', sensorData);
+                                    updateSensors(sensorData);
+                                    saveToFirebase(sensorData);
+                                    break;
+                                }
+                            } catch (e) {}
+                        }
                     }
-                });
-
-                if (!res.ok) {
-                    // Manejo de errores 400, 401, 500
-                    updateBanner('disconnected', `Error ${res.status}: Token inválido o Evento inaccesible.`);
-                    throw new Error(`HTTP Error status: ${res.status}`);
+                    break;
                 }
-                
-                const data = await res.json();
-                
-                // Procesar el array de eventos
-                if (data.events && data.events.length > 0) {
-                    const event = data.events[0];
-                    
-                    updateBanner('connected', 'Conectado - Recibiendo datos');
-                    
-                    // El campo 'data' del evento es un string JSON que hay que parsear
-                    const sensorData = JSON.parse(event.data);
-                    
-                    console.log('📊 Particle:', sensorData);
-                    updateSensors(sensorData);
-                    saveToFirebase(sensorData);
-
-                } else {
-                    updateBanner('disconnected', 'Conectado, pero no hay eventos recientes.');
-                }
-
             } catch (error) {
                 console.error('❌ Error Particle:', error);
-                if (!document.getElementById('banner').classList.contains('disconnected')) {
-                    updateBanner('disconnected', 'Error de red o conexión al servidor.');
-                }
+                updateBanner('disconnected', 'Error al conectar');
             }
-        } // Fin de fetchParticle CORREGIDO
+        }
 
         // Update Sensors
         function updateSensors(data) {
-            // Conversión de valores (Mantengo la lógica original)
             const co = data.MQ7 ? (data.MQ7 * 0.005).toFixed(1) : 0;
             const co2 = data.MQ135 ? (data.MQ135 * 0.5).toFixed(0) : 400;
             
@@ -849,70 +850,42 @@
                 Altitud: item.Altitude
             })));
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "DatosSensores");
-            XLSX.writeFile(wb, "AirGuard_Historial.xlsx");
+            XLSX.utils.book_append_sheet(wb, ws, 'Datos');
+            XLSX.writeFile(wb, `AirGuard_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
-        
+
         // Export CSV
         function exportCSV() {
-            const ws = XLSX.utils.json_to_sheet(historyData.map(item => ({
-                Fecha: item.dateString,
-                CO: item.CO,
-                CO2: item.CO2,
-                'PM2.5': item['PM2.5'],
-                PM10: item.PM10,
-                Temperatura: item.Temperature,
-                Presión: item.Pressure,
-                MQ7: item.MQ7,
-                MQ135: item.MQ135,
-                'PM1.0': item['PM1.0'],
-                Altitud: item.Altitude
-            })));
-            const csv = XLSX.utils.sheet_to_csv(ws);
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            if (link.download !== undefined) { 
-                const url = URL.createObjectURL(blob);
-                link.setAttribute("href", url);
-                link.setAttribute("download", "AirGuard_Historial.csv");
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
+            const csv = [
+                ['Fecha','CO','CO2','PM2.5','PM10','Temp','Presión','MQ7','MQ135','PM1.0','Altitud'],
+                ...historyData.map(item => [
+                    item.dateString,item.CO,item.CO2,item['PM2.5'],item.PM10,
+                    item.Temperature,item.Pressure,item.MQ7,item.MQ135,item['PM1.0'],item.Altitude
+                ])
+            ].map(row => row.join(',')).join('\n');
+            
+            const blob = new Blob([csv], {type: 'text/csv'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `AirGuard_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
         }
-        
-        // Clear History (Esta función solo borra la data local, no la de Firebase)
+
         function clearHistory() {
-            if (confirm("¿Estás seguro de que quieres borrar el historial local de datos? Esto no afectará la base de datos de Firebase.")) {
+            if (confirm('¿Borrar todo el historial?')) {
+                db.ref('sensor_data/history').remove();
                 historyData = [];
                 updateHistoryTable();
-                initCharts();
-                alert("Historial local borrado.");
-            }
-        }
-        
-        // Tab Switch
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`.tab[onclick="switchTab('${tabId}')"]`).classList.add('active');
-            
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            
-            // Re-renderizar gráficas si se cambia a la pestaña de gráficas
-            if (tabId === 'graficas') {
                 updateCharts();
             }
         }
-        
-        // Chart Functions (Sin cambios mayores, solo placeholder)
+
+        // Charts
         function initCharts() {
-            // Inicializar todas las gráficas con datos vacíos
-            const chartIds = ['CO', 'CO2', 'PM1', 'PM25', 'PM10', 'Temp', 'Pressure', 'Alt'];
-            chartIds.forEach(id => {
-                const ctx = document.getElementById(`chart${id}`).getContext('2d');
-                if (charts[id]) charts[id].destroy(); // Destruir la instancia anterior
+            const ids = ['CO', 'CO2', 'PM1', 'PM25', 'PM10', 'Temp', 'Pressure', 'Alt'];
+            ids.forEach(id => {
+                const ctx = document.getElementById('chart' + id).getContext('2d');
                 charts[id] = new Chart(ctx, {
                     type: 'line',
                     data: {
@@ -921,58 +894,47 @@
                             label: id,
                             data: [],
                             borderColor: '#0088CC',
-                            backgroundColor: 'rgba(0, 136, 204, 0.1)',
-                            borderWidth: 2,
-                            tension: 0.3
+                            tension: 0.4
                         }]
                     },
                     options: {
                         responsive: true,
-                        scales: {
-                            x: { display: false },
-                            y: { beginAtZero: false }
-                        },
-                        plugins: { legend: { display: false } }
+                        maintainAspectRatio: true,
+                        plugins: {legend: {display: false}}
                     }
                 });
             });
         }
-        
+
         function updateCharts() {
-            const reversedData = [...historyData].reverse(); // Los datos del historial están en orden inverso (más nuevo primero)
-            const labels = reversedData.map(item => new Date(item.timestamp).toLocaleTimeString('es-MX'));
+            const data = historyData.slice(0, 50).reverse();
+            const labels = data.map(d => new Date(d.timestamp).toLocaleTimeString('es-MX', {hour: '2-digit', minute: '2-digit'}));
             
             const datasets = {
-                CO: reversedData.map(item => item.CO),
-                CO2: reversedData.map(item => item.CO2),
-                PM1: reversedData.map(item => item['PM1.0']),
-                PM25: reversedData.map(item => item['PM2.5']),
-                PM10: reversedData.map(item => item.PM10),
-                Temp: reversedData.map(item => item.Temperature),
-                Pressure: reversedData.map(item => item.Pressure),
-                Alt: reversedData.map(item => item.Altitude)
+                CO: data.map(d => d.CO),
+                CO2: data.map(d => d.CO2),
+                PM1: data.map(d => d['PM1.0']),
+                PM25: data.map(d => d['PM2.5']),
+                PM10: data.map(d => d.PM10),
+                Temp: data.map(d => d.Temperature),
+                Pressure: data.map(d => d.Pressure),
+                Alt: data.map(d => d.Altitude)
             };
-
-            for (const id in charts) {
-                if (charts[id]) {
-                    charts[id].data.labels = labels;
-                    charts[id].data.datasets[0].data = datasets[id];
-                    charts[id].update();
-                }
-            }
+            
+            Object.keys(charts).forEach(key => {
+                charts[key].data.labels = labels;
+                charts[key].data.datasets[0].data = datasets[key];
+                charts[key].update();
+            });
         }
-        
-        // Autenticación inicial al cargar la página (para mantener sesión si ya está logueado en Firebase)
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                currentUser = user;
-                document.getElementById('loginContainer').style.display = 'none';
-                document.getElementById('appContainer').classList.add('active');
-                initApp();
-            }
-        });
 
+        // Switch Tab
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+            event.target.classList.add('active');
+        }
     </script>
 </body>
 </html>
-
