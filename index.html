@@ -4,80 +4,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AirGuard 4.0 - Monitor Ambiental</title>
+    <title>AirGuard 4.0</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-            --primary: #0088CC;
-            --success: #10B981;
-            --warning: #F59E0B;
-            --danger: #EF4444;
-            --bg: #F8F9FA;
-            --card: #FFFFFF;
-            --text: #1F2937;
-            --text-light: #6B7280;
-            --border: #E5E7EB;
+            --primary: #0088CC; --success: #10B981; --warning: #F59E0B;
+            --danger: #EF4444; --bg: #F8F9FA; --card: #FFF;
+            --text: #1F2937; --text-light: #6B7280; --border: #E5E7EB;
         }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-        }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); }
         
         /* Login */
-        .login-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 1rem;
-        }
-        .login-box {
-            background: white;
-            border-radius: 16px;
-            padding: 2rem;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-        .login-title {
-            text-align: center;
-            font-size: 2rem;
-            margin-bottom: 2rem;
-        }
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        .form-input {
-            width: 100%;
-            padding: 0.875rem;
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            font-size: 1rem;
-        }
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-        .btn-login {
-            width: 100%;
-            padding: 1rem;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .message {
-            padding: 0.75rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            display: none;
-        }
+        .login-container { display: flex; align-items: center; justify-content: center; min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1rem; }
+        .login-box { background: white; border-radius: 16px; padding: 2rem; width: 100%; max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .login-title { text-align: center; font-size: 2rem; margin-bottom: 2rem; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-input { width: 100%; padding: 0.875rem; border: 2px solid var(--border);
+            border-radius: 8px; font-size: 1rem; }
+        .form-input:focus { outline: none; border-color: var(--primary); }
+        .btn-login { width: 100%; padding: 1rem; background: var(--primary); color: white;
+            border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+        .message { padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; display: none; }
         .message.show { display: block; }
         .message.error { background: #FEE2E2; color: #991B1B; }
         .message.success { background: #D1FAE5; color: #065F46; }
@@ -85,259 +34,86 @@
         /* App */
         .app-container { display: none; }
         .app-container.active { display: block; }
-        
-        /* Header */
-        .header {
-            background: var(--primary);
-            color: white;
-            padding: 1rem;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .app-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-        .btn-header {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-        
-        /* Container */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1rem;
-        }
+        .header { background: var(--primary); color: white; padding: 1rem; position: sticky; top: 0; z-index: 100; }
+        .header-content { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; }
+        .app-title { font-size: 1.5rem; font-weight: 700; }
+        .btn-header { background: rgba(255,255,255,0.2); border: none; color: white;
+            padding: 0.75rem 1rem; border-radius: 8px; cursor: pointer; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 1rem; }
         
         /* Banner */
-        .banner {
-            padding: 1rem;
-            border-radius: 12px;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            font-weight: 600;
-        }
-        .banner.connected {
-            background: #D1FAE5;
-            color: #065F46;
-            border: 2px solid var(--success);
-        }
-        .banner.disconnected {
-            background: #FEE2E2;
-            color: #991B1B;
-            border: 2px solid var(--danger);
-        }
-        .dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-        .dot.connected {
-            background: var(--success);
-            animation: pulse 2s infinite;
-        }
+        .banner { padding: 1rem; border-radius: 12px; margin-bottom: 1rem; display: flex;
+            align-items: center; gap: 1rem; font-weight: 600; }
+        .banner.connected { background: #D1FAE5; color: #065F46; border: 2px solid var(--success); }
+        .banner.disconnected { background: #FEE2E2; color: #991B1B; border: 2px solid var(--danger); }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .dot.connected { background: var(--success); animation: pulse 2s infinite; }
         .dot.disconnected { background: var(--danger); }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         
         /* Tabs */
-        .tabs {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-            overflow-x: auto;
-        }
-        .tab {
-            padding: 0.875rem 1.5rem;
-            background: white;
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            cursor: pointer;
-            white-space: nowrap;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-        .tab.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
+        .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; overflow-x: auto; }
+        .tab { padding: 0.875rem 1.5rem; background: white; border: 2px solid var(--border);
+            border-radius: 10px; cursor: pointer; white-space: nowrap; font-weight: 500; transition: all 0.3s; }
+        .tab.active { background: var(--primary); color: white; border-color: var(--primary); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         
         /* Card */
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.25rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .card-header {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
+        .card { background: white; border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .card-header { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; }
         
         /* Grid */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-        }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
         
-        /* Sensor Card */
-        .sensor-card {
-            background: white;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            padding: 1.25rem;
-            text-align: center;
-        }
-        .sensor-name {
-            font-weight: 600;
-            color: var(--text-light);
-            margin-bottom: 1rem;
-        }
-        .sensor-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin: 0.5rem 0;
-        }
-        .sensor-unit {
-            color: var(--text-light);
-            font-size: 0.9rem;
-        }
-        .badge {
-            display: inline-block;
-            padding: 0.35rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-top: 0.5rem;
-        }
+        /* Sensor */
+        .sensor-card { background: white; border: 2px solid var(--border); border-radius: 12px;
+            padding: 1.25rem; text-align: center; }
+        .sensor-name { font-weight: 600; color: var(--text-light); margin-bottom: 1rem; }
+        .sensor-value { font-size: 2.5rem; font-weight: 700; margin: 0.5rem 0; }
+        .sensor-unit { color: var(--text-light); font-size: 0.9rem; }
+        .badge { display: inline-block; padding: 0.35rem 0.75rem; border-radius: 12px;
+            font-size: 0.8rem; font-weight: 600; margin-top: 0.5rem; }
         .badge.good { background: #D1FAE5; color: #065F46; }
         .badge.moderate { background: #FEF3C7; color: #92400E; }
         .badge.unhealthy { background: #FEE2E2; color: #991B1B; }
         
         /* Table */
-        .table-container {
-            overflow-x: auto;
-            border-radius: 12px;
-            border: 2px solid var(--border);
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 700px;
-        }
-        thead {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        th, td {
-            padding: 0.875rem;
-            text-align: left;
-        }
+        .table-container { overflow-x: auto; border-radius: 12px; border: 2px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        thead { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        th, td { padding: 0.875rem; text-align: left; }
         tbody tr:nth-child(even) { background: #FAFAFA; }
         tbody tr:hover { background: var(--bg); }
         
         /* Buttons */
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
+        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 8px;
+            cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
         
         /* Notification */
-        .notification {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            background: white;
-            border-left: 4px solid var(--danger);
-            border-radius: 8px;
-            padding: 1rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            max-width: 300px;
-            display: none;
-            z-index: 1000;
-            animation: slideIn 0.3s;
-        }
+        .notification { position: fixed; top: 80px; right: 20px; background: white;
+            border-left: 4px solid var(--danger); border-radius: 8px; padding: 1rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-width: 300px; display: none;
+            z-index: 1000; animation: slideIn 0.3s; }
         .notification.show { display: block; }
-        @keyframes slideIn {
-            from { transform: translateX(400px); }
-            to { transform: translateX(0); }
-        }
-        .notif-title {
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
+        @keyframes slideIn { from { transform: translateX(400px); } to { transform: translateX(0); } }
+        .notif-title { font-weight: 700; margin-bottom: 0.5rem; }
         
-        /* Chart Container */
-        .chart-wrapper {
-            margin-bottom: 2rem;
-            padding: 1rem;
-            background: white;
-            border-radius: 12px;
-            border: 2px solid var(--border);
-        }
-        .chart-title {
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-        canvas {
-            max-height: 300px;
-        }
+        /* Chart */
+        .chart-wrapper { margin-bottom: 2rem; padding: 1rem; background: white;
+            border-radius: 12px; border: 2px solid var(--border); }
+        .chart-title { font-weight: 600; margin-bottom: 1rem; }
+        canvas { max-height: 300px; }
         
-        /* Responsive */
         @media (max-width: 768px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
-            .tabs {
-                gap: 0.25rem;
-            }
-            .tab {
-                padding: 0.75rem 1rem;
-                font-size: 0.85rem;
-            }
-            canvas {
-                max-height: 200px;
-            }
+            .grid { grid-template-columns: 1fr; }
+            .tabs { gap: 0.25rem; }
+            .tab { padding: 0.75rem 1rem; font-size: 0.85rem; }
+            canvas { max-height: 200px; }
         }
     </style>
 </head>
@@ -350,10 +126,12 @@
             <div id="loginSuccess" class="message success"></div>
             <form id="loginForm">
                 <div class="form-group">
-                    <input type="email" id="email" class="form-input" placeholder="Email" value="admin@monitoreo.com" required>
+                    <input type="email" id="email" class="form-input" placeholder="Email" 
+                           value="admin@monitoreo.com" required>
                 </div>
                 <div class="form-group">
-                    <input type="password" id="password" class="form-input" placeholder="Contraseña" value="Monitoreo#2025" required>
+                    <input type="password" id="password" class="form-input" placeholder="Contraseña" 
+                           value="Monitoreo#2025" required>
                 </div>
                 <button type="submit" class="btn-login">Iniciar Sesión</button>
             </form>
@@ -362,13 +140,11 @@
 
     <!-- App -->
     <div id="appContainer" class="app-container">
-        <!-- Notification -->
         <div id="notification" class="notification">
-            <div class="notif-title">⚠️ Alerta de Calidad del Aire</div>
+            <div class="notif-title">⚠️ Alerta</div>
             <div id="notifText"></div>
         </div>
 
-        <!-- Header -->
         <div class="header">
             <div class="header-content">
                 <div class="app-title">⚡ AirGuard 4.0</div>
@@ -377,13 +153,11 @@
         </div>
 
         <div class="container">
-            <!-- Banner -->
             <div id="banner" class="banner disconnected">
                 <div class="dot disconnected"></div>
                 <span id="bannerText">Conectando...</span>
             </div>
 
-            <!-- Tabs -->
             <div class="tabs">
                 <button class="tab active" onclick="switchTab('dashboard')">📊 Dashboard</button>
                 <button class="tab" onclick="switchTab('adicional')">📋 Adicional</button>
@@ -440,14 +214,14 @@
             <!-- Adicional -->
             <div id="adicional" class="tab-content">
                 <div class="card">
-                    <div class="card-header">Datos Adicionales del Sensor</div>
+                    <div class="card-header">Datos Adicionales</div>
                     <div class="grid">
                         <div class="sensor-card">
-                            <div class="sensor-name">MQ7 (Analog)</div>
+                            <div class="sensor-name">MQ7</div>
                             <div class="sensor-value" id="valMQ7">--</div>
                         </div>
                         <div class="sensor-card">
-                            <div class="sensor-name">MQ135 (Analog)</div>
+                            <div class="sensor-name">MQ135</div>
                             <div class="sensor-value" id="valMQ135">--</div>
                         </div>
                         <div class="sensor-card">
@@ -467,7 +241,7 @@
             <!-- Historial -->
             <div id="historial" class="tab-content">
                 <div class="card">
-                    <div class="card-header">Historial de Lecturas</div>
+                    <div class="card-header">Historial</div>
                     <div style="margin-bottom: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
                         <button class="btn btn-success" onclick="exportExcel()">📊 Excel</button>
                         <button class="btn btn-primary" onclick="exportCSV()">📄 CSV</button>
@@ -477,13 +251,8 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Fecha</th>
-                                    <th>CO</th>
-                                    <th>CO2</th>
-                                    <th>PM2.5</th>
-                                    <th>PM10</th>
-                                    <th>Temp</th>
-                                    <th>Presión</th>
+                                    <th>Fecha</th><th>CO</th><th>CO2</th><th>PM2.5</th>
+                                    <th>PM10</th><th>Temp</th><th>Presión</th>
                                 </tr>
                             </thead>
                             <tbody id="historyTable"></tbody>
@@ -495,25 +264,21 @@
             <!-- Gráficas -->
             <div id="graficas" class="tab-content">
                 <div class="card">
-                    <div class="card-header">Gráficas Históricas</div>
+                    <div class="card-header">Gráficas</div>
                     <div class="chart-wrapper">
-                        <div class="chart-title">CO (Monóxido de Carbono)</div>
+                        <div class="chart-title">CO</div>
                         <canvas id="chartCO"></canvas>
                     </div>
                     <div class="chart-wrapper">
-                        <div class="chart-title">CO2 (Dióxido de Carbono)</div>
+                        <div class="chart-title">CO2</div>
                         <canvas id="chartCO2"></canvas>
                     </div>
                     <div class="chart-wrapper">
-                        <div class="chart-title">PM1.0 (Partículas Finas)</div>
-                        <canvas id="chartPM1"></canvas>
-                    </div>
-                    <div class="chart-wrapper">
-                        <div class="chart-title">PM2.5 (Partículas Finas)</div>
+                        <div class="chart-title">PM2.5</div>
                         <canvas id="chartPM25"></canvas>
                     </div>
                     <div class="chart-wrapper">
-                        <div class="chart-title">PM10 (Partículas Gruesas)</div>
+                        <div class="chart-title">PM10</div>
                         <canvas id="chartPM10"></canvas>
                     </div>
                     <div class="chart-wrapper">
@@ -521,12 +286,8 @@
                         <canvas id="chartTemp"></canvas>
                     </div>
                     <div class="chart-wrapper">
-                        <div class="chart-title">Presión Atmosférica</div>
+                        <div class="chart-title">Presión</div>
                         <canvas id="chartPressure"></canvas>
-                    </div>
-                    <div class="chart-wrapper">
-                        <div class="chart-title">Altitud</div>
-                        <canvas id="chartAlt"></canvas>
                     </div>
                 </div>
             </div>
@@ -537,9 +298,8 @@
                     <div class="card-header">🔮 Predicciones y Análisis</div>
                     <div style="padding: 3rem; text-align: center; color: var(--text-light);">
                         <div style="font-size: 4rem; margin-bottom: 1rem;">📊</div>
-                        <h3 style="margin-bottom: 1rem;">Sección en Desarrollo</h3>
-                        <p>Aquí se implementarán los algoritmos de predicción y análisis de tendencias.</p>
-                        <p style="margin-top: 0.5rem;">Próximamente disponible...</p>
+                        <h3>Sección en Desarrollo</h3>
+                        <p>Algoritmos de predicción próximamente...</p>
                     </div>
                 </div>
             </div>
@@ -550,17 +310,13 @@
         </div>
     </div>
 
-    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <!-- SheetJS -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 
     <script>
-        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyDXf14TEST2aoTbiA-ciF2Dm9_oYCddp3g",
             authDomain: "app-monitoreo-itnl-v0.firebaseapp.com",
@@ -574,17 +330,10 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
-        // Particle Config
-        const PARTICLE_TOKEN = 'b1c5f069840aca199108190366a063c062937a34';
-        const PARTICLE_EVENT = 'sensor_data';
-
-        // State
         let currentUser = null;
         let historyData = [];
         let charts = {};
-        let pollingInterval = null;
 
-        // Thresholds
         const THRESHOLDS = {
             CO: {good: 9, moderate: 35, critical: 50},
             CO2: {good: 1000, moderate: 2000, critical: 5000},
@@ -599,8 +348,6 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const btn = e.target.querySelector('.btn-login');
-            const errorDiv = document.getElementById('loginError');
-            const successDiv = document.getElementById('loginSuccess');
 
             btn.disabled = true;
             btn.textContent = 'Iniciando...';
@@ -609,9 +356,9 @@
                 const cred = await auth.signInWithEmailAndPassword(email, password);
                 currentUser = cred.user;
                 console.log('✅ Login OK');
-                
-                successDiv.textContent = '¡Bienvenido!';
-                successDiv.classList.add('show');
+
+                document.getElementById('loginSuccess').textContent = '¡Bienvenido!';
+                document.getElementById('loginSuccess').classList.add('show');
 
                 setTimeout(() => {
                     document.getElementById('loginContainer').style.display = 'none';
@@ -619,9 +366,8 @@
                     initApp();
                 }, 1000);
             } catch (error) {
-                console.error('❌ Error:', error);
-                errorDiv.textContent = error.message;
-                errorDiv.classList.add('show');
+                document.getElementById('loginError').textContent = error.message;
+                document.getElementById('loginError').classList.add('show');
                 btn.disabled = false;
                 btn.textContent = 'Iniciar Sesión';
             }
@@ -629,122 +375,110 @@
 
         function logout() {
             auth.signOut();
-            if (pollingInterval) clearInterval(pollingInterval);
             document.getElementById('appContainer').classList.remove('active');
             document.getElementById('loginContainer').style.display = 'flex';
         }
 
-        // Init App
+        // Init
         function initApp() {
-            console.log('🚀 Iniciando...');
+            console.log('🚀 Iniciando con Firebase...');
             setupFirebase();
             initCharts();
-            startPolling();
+            updateBanner('connected', 'Conectado - Leyendo Firebase');
         }
 
-        // Firebase
+        // Firebase - ÚNICA FUENTE DE DATOS
         function setupFirebase() {
             db.ref('.info/connected').on('value', snap => {
-                console.log('Firebase:', snap.val() ? 'OK' : 'OFF');
-            });
-            
-            db.ref('sensor_data/latest').on('value', snap => {
-                const data = snap.val();
-                if (data) {
-                    console.log('📡 Firebase:', data);
-                    updateSensors(data);
+                const connected = snap.val();
+                console.log('Firebase:', connected ? 'Conectado ✅' : 'Desconectado ❌');
+                if (connected) {
+                    updateBanner('connected', 'Conectado - Tiempo real');
+                } else {
+                    updateBanner('disconnected', 'Firebase desconectado');
                 }
             });
 
-            db.ref('sensor_data/history').limitToLast(100).on('value', snap => {
+            // Escuchar cambios en /lecturas
+            db.ref('lecturas').limitToLast(1).on('child_added', snap => {
+                const data = snap.val();
+                console.log('📡 Datos nuevos:', data);
+                processData(data);
+            });
+
+            db.ref('lecturas').limitToLast(1).on('child_changed', snap => {
+                const data = snap.val();
+                console.log('📡 Datos actualizados:', data);
+                processData(data);
+            });
+
+            // Cargar historial
+            db.ref('lecturas').limitToLast(100).on('value', snap => {
                 const data = snap.val();
                 if (data) {
-                    historyData = Object.values(data).sort((a,b) => b.timestamp - a.timestamp);
+                    historyData = Object.entries(data).map(([key, val]) => ({
+                        ...val,
+                        id: key,
+                        timestamp: val.timestamp ? new Date(val.timestamp).getTime() : Date.now()
+                    })).sort((a,b) => b.timestamp - a.timestamp);
+
+                    console.log('📊 Historial:', historyData.length, 'lecturas');
                     updateHistoryTable();
                     updateCharts();
                 }
             });
         }
 
-        // Polling Particle
-        async function startPolling() {
-            updateBanner('connected', 'Conectado - Recibiendo datos');
-            fetchParticle();
-            pollingInterval = setInterval(fetchParticle, 10000);
+        function processData(data) {
+            const parsed = {
+                MQ7: parseFloat(data.MQ7) || 0,
+                MQ135: parseFloat(data.MQ135) || 0,
+                'PM1.0': parseFloat(data.PM1_0) || 0,
+                'PM2.5': parseFloat(data.PM2_5) || 0,
+                PM10: parseFloat(data.PM10) || 0,
+                Temperature: parseFloat(data.Temperature) || 0,
+                Pressure: parseFloat(data.Pressure) || 0,
+                Altitude: parseFloat(data.Altitude) || 0
+            };
+            console.log('🔄 Procesado:', parsed);
+            updateSensors(parsed);
         }
 
-        async function fetchParticle() {
-            try {
-                const res = await fetch(`https://api.particle.io/v1/devices/events/${PARTICLE_EVENT}?access_token=${PARTICLE_TOKEN}`);
-                const reader = res.body.getReader();
-                const decoder = new TextDecoder();
-                
-                while (true) {
-                    const {done, value} = await reader.read();
-                    if (done) break;
-                    
-                    const text = decoder.decode(value);
-                    const lines = text.split('\n');
-                    
-                    for (const line of lines) {
-                        if (line.startsWith('data: ')) {
-                            try {
-                                const json = JSON.parse(line.substring(6));
-                                if (json.data) {
-                                    const sensorData = JSON.parse(json.data);
-                                    console.log('📊 Particle:', sensorData);
-                                    updateSensors(sensorData);
-                                    saveToFirebase(sensorData);
-                                    break;
-                                }
-                            } catch (e) {}
-                        }
-                    }
-                    break;
-                }
-            } catch (error) {
-                console.error('❌ Error Particle:', error);
-                updateBanner('disconnected', 'Error al conectar');
-            }
-        }
-
-        // Update Sensors
         function updateSensors(data) {
-            const co = data.MQ7 ? (data.MQ7 * 0.005).toFixed(1) : 0;
-            const co2 = data.MQ135 ? (data.MQ135 * 0.5).toFixed(0) : 400;
-            
+            const co = (data.MQ7 * 0.005).toFixed(1);
+            const co2 = (data.MQ135 * 0.5).toFixed(0);
+
             document.getElementById('valCO').textContent = co;
             document.getElementById('valCO2').textContent = co2;
             document.getElementById('valPM25').textContent = data['PM2.5'] || '--';
             document.getElementById('valPM10').textContent = data.PM10 || '--';
-            document.getElementById('valTemp').textContent = data.Temperature ? data.Temperature.toFixed(1) : '--';
-            document.getElementById('valPressure').textContent = data.Pressure ? data.Pressure.toFixed(1) : '--';
-            
-            document.getElementById('valMQ7').textContent = data.MQ7 || '--';
-            document.getElementById('valMQ135').textContent = data.MQ135 || '--';
-            document.getElementById('valPM1').textContent = data['PM1.0'] || '--';
-            document.getElementById('valAlt').textContent = data.Altitude ? data.Altitude.toFixed(1) : '--';
-            
+            document.getElementById('valTemp').textContent = data.Temperature.toFixed(1);
+            document.getElementById('valPressure').textContent = data.Pressure.toFixed(1);
+            document.getElementById('valMQ7').textContent = data.MQ7;
+            document.getElementById('valMQ135').textContent = data.MQ135;
+            document.getElementById('valPM1').textContent = data['PM1.0'];
+            document.getElementById('valAlt').textContent = data.Altitude.toFixed(1);
+
             updateStatus('CO', parseFloat(co));
             updateStatus('CO2', parseFloat(co2));
-            updateStatus('PM25', parseFloat(data['PM2.5']));
-            updateStatus('PM10', parseFloat(data.PM10));
-            
+            updateStatus('PM25', data['PM2.5']);
+            updateStatus('PM10', data.PM10);
+
             checkAlerts({
                 CO: parseFloat(co),
                 CO2: parseFloat(co2),
-                PM25: parseFloat(data['PM2.5']),
-                PM10: parseFloat(data.PM10),
-                Temp: parseFloat(data.Temperature)
+                PM25: data['PM2.5'],
+                PM10: data.PM10,
+                Temp: data.Temperature
             });
-            
-            updateLastUpdate();
+
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('es-MX');
         }
 
         function updateStatus(sensor, value) {
             const badge = document.getElementById('stat' + sensor);
             if (!badge || !THRESHOLDS[sensor]) return;
-            
+
             const t = THRESHOLDS[sensor];
             if (value <= t.good) {
                 badge.textContent = 'Bueno';
@@ -759,94 +493,59 @@
         }
 
         function checkAlerts(values) {
-            if (values.CO > THRESHOLDS.CO.critical) {
-                showNotification(`CO crítico: ${values.CO} ppm`);
-            }
-            if (values.CO2 > THRESHOLDS.CO2.critical) {
-                showNotification(`CO2 crítico: ${values.CO2} ppm`);
-            }
-            if (values.PM25 > THRESHOLDS.PM25.critical) {
-                showNotification(`PM2.5 insalubre: ${values.PM25} µg/m³`);
-            }
-            if (values.PM10 > THRESHOLDS.PM10.critical) {
-                showNotification(`PM10 insalubre: ${values.PM10} µg/m³`);
-            }
-            if (values.Temp > THRESHOLDS.Temp.critical) {
-                showNotification(`Temperatura crítica: ${values.Temp}°C`);
-            }
+            if (values.CO > THRESHOLDS.CO.critical) showNotification(`CO crítico: ${values.CO} ppm`);
+            if (values.CO2 > THRESHOLDS.CO2.critical) showNotification(`CO2 crítico: ${values.CO2} ppm`);
+            if (values.PM25 > THRESHOLDS.PM25.critical) showNotification(`PM2.5: ${values.PM25} µg/m³`);
+            if (values.PM10 > THRESHOLDS.PM10.critical) showNotification(`PM10: ${values.PM10} µg/m³`);
+            if (values.Temp > THRESHOLDS.Temp.critical) showNotification(`Temp: ${values.Temp}°C`);
         }
 
         function showNotification(text) {
             const notif = document.getElementById('notification');
-            const notifText = document.getElementById('notifText');
-            notifText.textContent = text;
+            document.getElementById('notifText').textContent = text;
             notif.classList.add('show');
             setTimeout(() => notif.classList.remove('show'), 5000);
         }
 
         function updateBanner(status, text) {
             const banner = document.getElementById('banner');
-            const dot = banner.querySelector('.dot');
-            const bannerText = document.getElementById('bannerText');
-            
             banner.className = `banner ${status}`;
-            dot.className = `dot ${status}`;
-            bannerText.textContent = text;
+            banner.querySelector('.dot').className = `dot ${status}`;
+            document.getElementById('bannerText').textContent = text;
         }
 
-        function updateLastUpdate() {
-            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('es-MX');
-        }
-
-        // Save to Firebase
-        function saveToFirebase(data) {
-            if (!currentUser) return;
-            const timestamp = Date.now();
-            const entry = {
-                ...data,
-                CO: data.MQ7 ? (data.MQ7 * 0.005) : 0,
-                CO2: data.MQ135 ? (data.MQ135 * 0.5) : 400,
-                timestamp,
-                dateString: new Date().toLocaleString('es-MX'),
-                user: currentUser.uid
-            };
-            db.ref('sensor_data/latest').set(entry);
-            db.ref(`sensor_data/history/${timestamp}`).set(entry);
-            console.log('💾 Guardado');
-        }
-
-        // History Table
+        // History
         function updateHistoryTable() {
             const tbody = document.getElementById('historyTable');
             tbody.innerHTML = '';
             historyData.slice(0, 50).forEach(item => {
+                const co = item.MQ7 ? (parseFloat(item.MQ7) * 0.005).toFixed(1) : '--';
+                const co2 = item.MQ135 ? (parseFloat(item.MQ135) * 0.5).toFixed(0) : '--';
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${item.dateString || '--'}</td>
-                    <td>${item.CO ? item.CO.toFixed(1) : '--'}</td>
-                    <td>${item.CO2 || '--'}</td>
-                    <td>${item['PM2.5'] || '--'}</td>
+                    <td>${new Date(item.timestamp).toLocaleString('es-MX')}</td>
+                    <td>${co}</td>
+                    <td>${co2}</td>
+                    <td>${item.PM2_5 || '--'}</td>
                     <td>${item.PM10 || '--'}</td>
-                    <td>${item.Temperature ? item.Temperature.toFixed(1) : '--'}</td>
-                    <td>${item.Pressure ? item.Pressure.toFixed(1) : '--'}</td>
+                    <td>${item.Temperature || '--'}</td>
+                    <td>${item.Pressure || '--'}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // Export Excel
         function exportExcel() {
             const ws = XLSX.utils.json_to_sheet(historyData.map(item => ({
-                Fecha: item.dateString,
-                CO: item.CO,
-                CO2: item.CO2,
-                'PM2.5': item['PM2.5'],
+                Fecha: new Date(item.timestamp).toLocaleString('es-MX'),
+                CO: item.MQ7 ? (parseFloat(item.MQ7) * 0.005).toFixed(1) : '',
+                CO2: item.MQ135 ? (parseFloat(item.MQ135) * 0.5).toFixed(0) : '',
+                'PM2.5': item.PM2_5,
                 PM10: item.PM10,
                 Temperatura: item.Temperature,
                 Presión: item.Pressure,
                 MQ7: item.MQ7,
                 MQ135: item.MQ135,
-                'PM1.0': item['PM1.0'],
                 Altitud: item.Altitude
             })));
             const wb = XLSX.utils.book_new();
@@ -854,16 +553,17 @@
             XLSX.writeFile(wb, `AirGuard_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
 
-        // Export CSV
         function exportCSV() {
             const csv = [
-                ['Fecha','CO','CO2','PM2.5','PM10','Temp','Presión','MQ7','MQ135','PM1.0','Altitud'],
+                ['Fecha','CO','CO2','PM2.5','PM10','Temp','Presión'],
                 ...historyData.map(item => [
-                    item.dateString,item.CO,item.CO2,item['PM2.5'],item.PM10,
-                    item.Temperature,item.Pressure,item.MQ7,item.MQ135,item['PM1.0'],item.Altitude
+                    new Date(item.timestamp).toLocaleString('es-MX'),
+                    item.MQ7 ? (parseFloat(item.MQ7) * 0.005).toFixed(1) : '',
+                    item.MQ135 ? (parseFloat(item.MQ135) * 0.5).toFixed(0) : '',
+                    item.PM2_5, item.PM10, item.Temperature, item.Pressure
                 ])
             ].map(row => row.join(',')).join('\n');
-            
+
             const blob = new Blob([csv], {type: 'text/csv'});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -873,8 +573,8 @@
         }
 
         function clearHistory() {
-            if (confirm('¿Borrar todo el historial?')) {
-                db.ref('sensor_data/history').remove();
+            if (confirm('¿Borrar historial?')) {
+                db.ref('lecturas').remove();
                 historyData = [];
                 updateHistoryTable();
                 updateCharts();
@@ -883,25 +583,12 @@
 
         // Charts
         function initCharts() {
-            const ids = ['CO', 'CO2', 'PM1', 'PM25', 'PM10', 'Temp', 'Pressure', 'Alt'];
-            ids.forEach(id => {
+            ['CO', 'CO2', 'PM25', 'PM10', 'Temp', 'Pressure'].forEach(id => {
                 const ctx = document.getElementById('chart' + id).getContext('2d');
                 charts[id] = new Chart(ctx, {
                     type: 'line',
-                    data: {
-                        labels: [],
-                        datasets: [{
-                            label: id,
-                            data: [],
-                            borderColor: '#0088CC',
-                            tension: 0.4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        plugins: {legend: {display: false}}
-                    }
+                    data: { labels: [], datasets: [{ label: id, data: [], borderColor: '#0088CC', tension: 0.4 }] },
+                    options: { responsive: true, maintainAspectRatio: true, plugins: {legend: {display: false}} }
                 });
             });
         }
@@ -909,18 +596,16 @@
         function updateCharts() {
             const data = historyData.slice(0, 50).reverse();
             const labels = data.map(d => new Date(d.timestamp).toLocaleTimeString('es-MX', {hour: '2-digit', minute: '2-digit'}));
-            
+
             const datasets = {
-                CO: data.map(d => d.CO),
-                CO2: data.map(d => d.CO2),
-                PM1: data.map(d => d['PM1.0']),
-                PM25: data.map(d => d['PM2.5']),
-                PM10: data.map(d => d.PM10),
-                Temp: data.map(d => d.Temperature),
-                Pressure: data.map(d => d.Pressure),
-                Alt: data.map(d => d.Altitude)
+                CO: data.map(d => d.MQ7 ? parseFloat(d.MQ7) * 0.005 : 0),
+                CO2: data.map(d => d.MQ135 ? parseFloat(d.MQ135) * 0.5 : 400),
+                PM25: data.map(d => parseFloat(d.PM2_5) || 0),
+                PM10: data.map(d => parseFloat(d.PM10) || 0),
+                Temp: data.map(d => parseFloat(d.Temperature) || 0),
+                Pressure: data.map(d => parseFloat(d.Pressure) || 0)
             };
-            
+
             Object.keys(charts).forEach(key => {
                 charts[key].data.labels = labels;
                 charts[key].data.datasets[0].data = datasets[key];
@@ -928,7 +613,6 @@
             });
         }
 
-        // Switch Tab
         function switchTab(tab) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
