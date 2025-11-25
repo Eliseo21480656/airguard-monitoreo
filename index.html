@@ -1,5 +1,4 @@
 
-// firebase 2 
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -12,6 +11,7 @@
             --primary: #0088CC; --success: #10B981; --warning: #F59E0B;
             --danger: #EF4444; --bg: #F8F9FA; --card: #FFF;
             --text: #1F2937; --text-light: #6B7280; --border: #E5E7EB;
+            --platinum: #5e5e5e; --platinum-light: #858585;
         }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); }
         
@@ -35,11 +35,21 @@
         /* App */
         .app-container { display: none; }
         .app-container.active { display: block; }
-        .header { background: var(--primary); color: white; padding: 1rem; position: sticky; top: 0; z-index: 100; }
-        .header-content { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; }
-        .app-title { font-size: 1.5rem; font-weight: 700; }
+        .header { background: linear-gradient(135deg, var(--platinum) 0%, var(--platinum-light) 100%);
+            color: white; padding: 1rem; position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        .header-content { display: flex; justify-content: space-between; align-items: center; 
+            max-width: 1200px; margin: 0 auto; }
+        .app-title { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+        .spark { font-size: 1.8rem; animation: sparkle 1.5s infinite; }
+        @keyframes sparkle {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.1); }
+        }
         .btn-header { background: rgba(255,255,255,0.2); border: none; color: white;
-            padding: 0.75rem 1rem; border-radius: 8px; cursor: pointer; }
+            padding: 0.75rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600;
+            transition: all 0.3s; }
+        .btn-header:hover { background: rgba(255,255,255,0.3); }
         .container { max-width: 1200px; margin: 0 auto; padding: 1rem; }
         
         /* Banner */
@@ -53,47 +63,93 @@
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         
         /* Tabs */
-        .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; overflow-x: auto; }
+        .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; overflow-x: auto; 
+            padding-bottom: 0.5rem; }
+        .tabs::-webkit-scrollbar { height: 4px; }
+        .tabs::-webkit-scrollbar-thumb { background: var(--platinum); border-radius: 4px; }
         .tab { padding: 0.875rem 1.5rem; background: white; border: 2px solid var(--border);
-            border-radius: 10px; cursor: pointer; white-space: nowrap; font-weight: 500; transition: all 0.3s; }
-        .tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+            border-radius: 10px; cursor: pointer; white-space: nowrap; font-weight: 500; 
+            transition: all 0.3s; }
+        .tab.active { background: var(--platinum); color: white; border-color: var(--platinum); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         
         /* Card */
         .card { background: white; border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .card-header { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; }
+        .card-header { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem;
+            color: var(--platinum); }
         
-        /* Grid */
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
-        
-        /* Sensor */
-        .sensor-card { background: white; border: 2px solid var(--border); border-radius: 12px;
-            padding: 1.25rem; text-align: center; }
-        .sensor-name { font-weight: 600; color: var(--text-light); margin-bottom: 1rem; }
-        .sensor-value { font-size: 2.5rem; font-weight: 700; margin: 0.5rem 0; }
-        .sensor-unit { color: var(--text-light); font-size: 0.9rem; }
+        /* Gauge Grid */
+        .gauge-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
+            gap: 1rem; }
+        .gauge-container { background: linear-gradient(145deg, #ffffff 0%, #f5f5f5 100%);
+            border: 3px solid var(--platinum); border-radius: 16px; padding: 1rem;
+            text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .gauge-name { font-weight: 700; color: var(--platinum); margin-bottom: 0.5rem;
+            font-size: 0.95rem; letter-spacing: 0.5px; }
+        .gauge-canvas { margin: 0.5rem auto; }
+        .gauge-value { font-size: 1.5rem; font-weight: 700; color: var(--platinum);
+            margin: 0.5rem 0; }
+        .gauge-unit { font-size: 0.85rem; color: var(--platinum-light); font-weight: 600; }
         .badge { display: inline-block; padding: 0.35rem 0.75rem; border-radius: 12px;
             font-size: 0.8rem; font-weight: 600; margin-top: 0.5rem; }
         .badge.good { background: #D1FAE5; color: #065F46; }
         .badge.moderate { background: #FEF3C7; color: #92400E; }
         .badge.unhealthy { background: #FEE2E2; color: #991B1B; }
         
+        /* Filters */
+        .filters { background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1rem;
+            border: 2px solid var(--platinum); }
+        .filter-title { font-weight: 700; color: var(--platinum); margin-bottom: 1rem; }
+        .filter-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.5rem; margin-bottom: 1rem; }
+        .filter-btn { padding: 0.75rem; border: 2px solid var(--border); background: white;
+            border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s;
+            font-size: 0.9rem; }
+        .filter-btn.active { background: var(--platinum); color: white; border-color: var(--platinum); }
+        .filter-btn:hover { border-color: var(--platinum); }
+        .custom-range { display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.5rem;
+            align-items: center; }
+        .date-input { padding: 0.75rem; border: 2px solid var(--border); border-radius: 8px;
+            font-size: 0.9rem; }
+        
         /* Table */
-        .table-container { overflow-x: auto; border-radius: 12px; border: 2px solid var(--border); }
-        table { width: 100%; border-collapse: collapse; min-width: 700px; }
-        thead { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-        th, td { padding: 0.875rem; text-align: left; }
+        .table-container { overflow-x: auto; border-radius: 12px; border: 2px solid var(--platinum); }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        thead { background: linear-gradient(135deg, var(--platinum) 0%, var(--platinum-light) 100%); 
+            color: white; }
+        th, td { padding: 0.875rem; text-align: left; font-size: 0.9rem; }
         tbody tr:nth-child(even) { background: #FAFAFA; }
-        tbody tr:hover { background: var(--bg); }
+        tbody tr:hover { background: #F0F0F0; }
+        .records-info { padding: 0.75rem; background: #F0F0F0; border-radius: 8px;
+            margin-bottom: 1rem; text-align: center; font-weight: 600; color: var(--platinum); }
         
         /* Buttons */
         .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 8px;
-            cursor: pointer; font-weight: 600; transition: all 0.3s; }
+            cursor: pointer; font-weight: 600; transition: all 0.3s; font-size: 0.9rem; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-success { background: var(--success); color: white; }
         .btn-danger { background: var(--danger); color: white; }
+        .btn-platinum { background: var(--platinum); color: white; }
+        
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-content { background: white; border-radius: 16px; padding: 2rem; max-width: 400px;
+            width: 90%; max-height: 80vh; overflow-y: auto; }
+        .modal-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 1.5rem;
+            color: var(--platinum); }
+        
+        /* Chart */
+        .chart-wrapper { margin-bottom: 2rem; padding: 1rem; background: white;
+            border-radius: 12px; border: 2px solid var(--platinum); }
+        .chart-controls { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .chart-btn { padding: 0.5rem 1rem; border: 2px solid var(--border); background: white;
+            border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+        .chart-btn.active { background: var(--platinum); color: white; border-color: var(--platinum); }
+        .chart-title { font-weight: 700; color: var(--platinum); margin-bottom: 1rem; }
+        canvas { max-height: 300px; }
         
         /* Notification */
         .notification { position: fixed; top: 80px; right: 20px; background: white;
@@ -104,16 +160,11 @@
         @keyframes slideIn { from { transform: translateX(400px); } to { transform: translateX(0); } }
         .notif-title { font-weight: 700; margin-bottom: 0.5rem; }
         
-        /* Chart */
-        .chart-wrapper { margin-bottom: 2rem; padding: 1rem; background: white;
-            border-radius: 12px; border: 2px solid var(--border); }
-        .chart-title { font-weight: 600; margin-bottom: 1rem; }
-        canvas { max-height: 300px; }
-        
         @media (max-width: 768px) {
-            .grid { grid-template-columns: 1fr; }
-            .tabs { gap: 0.25rem; }
-            .tab { padding: 0.75rem 1rem; font-size: 0.85rem; }
+            .gauge-grid { grid-template-columns: repeat(2, 1fr); }
+            .filter-buttons { grid-template-columns: repeat(2, 1fr); }
+            .custom-range { grid-template-columns: 1fr; }
+            .chart-controls { justify-content: center; }
             canvas { max-height: 200px; }
         }
     </style>
@@ -148,7 +199,10 @@
 
         <div class="header">
             <div class="header-content">
-                <div class="app-title">⚡ AirGuard 4.0</div>
+                <div class="app-title">
+                    <span class="spark">⚡</span>
+                    <span>AirGuard 4.0</span>
+                </div>
                 <button class="btn-header" onclick="logout()">🚪 Salir</button>
             </div>
         </div>
@@ -160,7 +214,7 @@
             </div>
 
             <div class="tabs">
-                <button class="tab active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+                <button class="tab active" onclick="switchTab('dashboard')">⚡ Dashboard</button>
                 <button class="tab" onclick="switchTab('adicional')">📋 Adicional</button>
                 <button class="tab" onclick="switchTab('historial')">📜 Historial</button>
                 <button class="tab" onclick="switchTab('graficas')">📈 Gráficas</button>
@@ -170,42 +224,48 @@
             <!-- Dashboard -->
             <div id="dashboard" class="tab-content active">
                 <div class="card">
-                    <div class="card-header">Variables Críticas</div>
-                    <div class="grid">
-                        <div class="sensor-card">
-                            <div class="sensor-name">CO (Monóxido)</div>
-                            <div class="sensor-value" id="valCO">--</div>
-                            <div class="sensor-unit">ppm</div>
+                    <div class="card-header">⚡ Variables Críticas</div>
+                    <div class="gauge-grid">
+                        <div class="gauge-container">
+                            <div class="gauge-name">CO</div>
+                            <canvas id="gaugeCO" class="gauge-canvas" width="120" height="120"></canvas>
+                            <div class="gauge-value" id="valCO">--</div>
+                            <div class="gauge-unit">ppm</div>
                             <div class="badge good" id="statCO">Sin datos</div>
                         </div>
-                        <div class="sensor-card">
-                            <div class="sensor-name">CO2 (Dióxido)</div>
-                            <div class="sensor-value" id="valCO2">--</div>
-                            <div class="sensor-unit">ppm</div>
+                        <div class="gauge-container">
+                            <div class="gauge-name">CO2</div>
+                            <canvas id="gaugeCO2" class="gauge-canvas" width="120" height="120"></canvas>
+                            <div class="gauge-value" id="valCO2">--</div>
+                            <div class="gauge-unit">ppm</div>
                             <div class="badge good" id="statCO2">Sin datos</div>
                         </div>
-                        <div class="sensor-card">
-                            <div class="sensor-name">PM2.5</div>
-                            <div class="sensor-value" id="valPM25">--</div>
-                            <div class="sensor-unit">µg/m³</div>
+                        <div class="gauge-container">
+                            <div class="gauge-name">PM2.5</div>
+                            <canvas id="gaugePM25" class="gauge-canvas" width="120" height="120"></canvas>
+                            <div class="gauge-value" id="valPM25">--</div>
+                            <div class="gauge-unit">µg/m³</div>
                             <div class="badge good" id="statPM25">Sin datos</div>
                         </div>
-                        <div class="sensor-card">
-                            <div class="sensor-name">PM10</div>
-                            <div class="sensor-value" id="valPM10">--</div>
-                            <div class="sensor-unit">µg/m³</div>
+                        <div class="gauge-container">
+                            <div class="gauge-name">PM10</div>
+                            <canvas id="gaugePM10" class="gauge-canvas" width="120" height="120"></canvas>
+                            <div class="gauge-value" id="valPM10">--</div>
+                            <div class="gauge-unit">µg/m³</div>
                             <div class="badge good" id="statPM10">Sin datos</div>
                         </div>
-                        <div class="sensor-card">
-                            <div class="sensor-name">Temperatura</div>
-                            <div class="sensor-value" id="valTemp">--</div>
-                            <div class="sensor-unit">°C</div>
+                        <div class="gauge-container">
+                            <div class="gauge-name">TEMP</div>
+                            <canvas id="gaugeTemp" class="gauge-canvas" width="120" height="120"></canvas>
+                            <div class="gauge-value" id="valTemp">--</div>
+                            <div class="gauge-unit">°C</div>
                             <div class="badge good">Normal</div>
                         </div>
-                        <div class="sensor-card">
-                            <div class="sensor-name">Presión</div>
-                            <div class="sensor-value" id="valPressure">--</div>
-                            <div class="sensor-unit">Pa</div>
+                        <div class="gauge-container">
+                            <div class="gauge-name">PRESIÓN</div>
+                            <canvas id="gaugePressure" class="gauge-canvas" width="120" height="120"></canvas>
+                            <div class="gauge-value" id="valPressure">--</div>
+                            <div class="gauge-unit">Pa</div>
                             <div class="badge good">Normal</div>
                         </div>
                     </div>
@@ -215,25 +275,27 @@
             <!-- Adicional -->
             <div id="adicional" class="tab-content">
                 <div class="card">
-                    <div class="card-header">Datos Adicionales</div>
-                    <div class="grid">
-                        <div class="sensor-card">
-                            <div class="sensor-name">MQ7</div>
-                            <div class="sensor-value" id="valMQ7">--</div>
+                    <div class="card-header">📋 Datos Técnicos (Valores Brutos)</div>
+                    <div class="gauge-grid">
+                        <div class="gauge-container">
+                            <div class="gauge-name">MQ7</div>
+                            <div class="gauge-value" id="valMQ7">--</div>
+                            <div class="gauge-unit">Analógico</div>
                         </div>
-                        <div class="sensor-card">
-                            <div class="sensor-name">MQ135</div>
-                            <div class="sensor-value" id="valMQ135">--</div>
+                        <div class="gauge-container">
+                            <div class="gauge-name">MQ135</div>
+                            <div class="gauge-value" id="valMQ135">--</div>
+                            <div class="gauge-unit">Analógico</div>
                         </div>
-                        <div class="sensor-card">
-                            <div class="sensor-name">PM1.0</div>
-                            <div class="sensor-value" id="valPM1">--</div>
-                            <div class="sensor-unit">µg/m³</div>
+                        <div class="gauge-container">
+                            <div class="gauge-name">PM1.0</div>
+                            <div class="gauge-value" id="valPM1">--</div>
+                            <div class="gauge-unit">µg/m³</div>
                         </div>
-                        <div class="sensor-card">
-                            <div class="sensor-name">Altitud</div>
-                            <div class="sensor-value" id="valAlt">--</div>
-                            <div class="sensor-unit">m</div>
+                        <div class="gauge-container">
+                            <div class="gauge-name">ALTITUD</div>
+                            <div class="gauge-value" id="valAlt">--</div>
+                            <div class="gauge-unit">metros</div>
                         </div>
                     </div>
                 </div>
@@ -242,18 +304,41 @@
             <!-- Historial -->
             <div id="historial" class="tab-content">
                 <div class="card">
-                    <div class="card-header">Historial</div>
-                    <div style="margin-bottom: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                        <button class="btn btn-success" onclick="exportExcel()">📊 Excel</button>
-                        <button class="btn btn-primary" onclick="exportCSV()">📄 CSV</button>
-                        <button class="btn btn-danger" onclick="clearHistory()">🗑️ Borrar</button>
+                    <div class="card-header">📜 Historial Completo</div>
+                    
+                    <!-- Filters -->
+                    <div class="filters">
+                        <div class="filter-title">🔍 Filtrar por Tiempo</div>
+                        <div class="filter-buttons">
+                            <button class="filter-btn active" onclick="filterTime('all')">Todo</button>
+                            <button class="filter-btn" onclick="filterTime('today')">Hoy</button>
+                            <button class="filter-btn" onclick="filterTime('yesterday')">Ayer</button>
+                            <button class="filter-btn" onclick="filterTime('week')">7 días</button>
+                            <button class="filter-btn" onclick="filterTime('month')">30 días</button>
+                        </div>
+                        <div class="custom-range">
+                            <input type="date" id="dateFrom" class="date-input">
+                            <input type="date" id="dateTo" class="date-input">
+                            <button class="btn btn-platinum" onclick="filterCustomRange()">Aplicar</button>
+                        </div>
                     </div>
+
+                    <div class="records-info">
+                        📊 Mostrando <span id="recordCount">0</span> de <span id="totalCount">0</span> registros
+                    </div>
+
+                    <div style="margin-bottom: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-success" onclick="exportExcel()">📊 Excel Completo</button>
+                        <button class="btn btn-primary" onclick="exportCSV()">📄 CSV Completo</button>
+                        <button class="btn btn-danger" onclick="showDeleteMenu()">🗑️ Borrar</button>
+                    </div>
+                    
                     <div class="table-container">
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Fecha</th><th>CO</th><th>CO2</th><th>PM2.5</th>
-                                    <th>PM10</th><th>Temp</th><th>Presión</th>
+                                    <th>Fecha y Hora</th><th>CO</th><th>CO2</th><th>PM2.5</th>
+                                    <th>PM10</th><th>Temp</th><th>Presión</th><th>Alt</th>
                                 </tr>
                             </thead>
                             <tbody id="historyTable"></tbody>
@@ -265,29 +350,37 @@
             <!-- Gráficas -->
             <div id="graficas" class="tab-content">
                 <div class="card">
-                    <div class="card-header">Gráficas</div>
+                    <div class="card-header">📈 Gráficas Temporales</div>
+                    
                     <div class="chart-wrapper">
-                        <div class="chart-title">CO</div>
+                        <div class="chart-controls">
+                            <button class="chart-btn active" onclick="setChartRange('hour')">Última Hora</button>
+                            <button class="chart-btn" onclick="setChartRange('day')">Hoy</button>
+                            <button class="chart-btn" onclick="setChartRange('week')">7 Días</button>
+                            <button class="chart-btn" onclick="setChartRange('month')">30 Días</button>
+                            <button class="chart-btn" onclick="setChartRange('all')">Todo</button>
+                        </div>
+                        <div class="chart-title">CO (Monóxido de Carbono)</div>
                         <canvas id="chartCO"></canvas>
                     </div>
+                    
                     <div class="chart-wrapper">
-                        <div class="chart-title">CO2</div>
+                        <div class="chart-title">CO2 (Dióxido de Carbono)</div>
                         <canvas id="chartCO2"></canvas>
                     </div>
+                    
                     <div class="chart-wrapper">
-                        <div class="chart-title">PM2.5</div>
-                        <canvas id="chartPM25"></canvas>
+                        <div class="chart-title">PM2.5 y PM10 (Partículas)</div>
+                        <canvas id="chartPM"></canvas>
                     </div>
-                    <div class="chart-wrapper">
-                        <div class="chart-title">PM10</div>
-                        <canvas id="chartPM10"></canvas>
-                    </div>
+                    
                     <div class="chart-wrapper">
                         <div class="chart-title">Temperatura</div>
                         <canvas id="chartTemp"></canvas>
                     </div>
+                    
                     <div class="chart-wrapper">
-                        <div class="chart-title">Presión</div>
+                        <div class="chart-title">Presión Atmosférica</div>
                         <canvas id="chartPressure"></canvas>
                     </div>
                 </div>
@@ -300,13 +393,36 @@
                     <div style="padding: 3rem; text-align: center; color: var(--text-light);">
                         <div style="font-size: 4rem; margin-bottom: 1rem;">📊</div>
                         <h3>Sección en Desarrollo</h3>
-                        <p>Algoritmos de predicción próximamente...</p>
+                        <p style="margin-top: 1rem;">Algoritmos de Machine Learning para predicción de tendencias.</p>
+                        <p style="margin-top: 0.5rem;">Análisis estadístico avanzado próximamente...</p>
                     </div>
                 </div>
             </div>
 
             <div style="text-align: center; color: var(--text-light); font-size: 0.85rem; margin-top: 1rem;">
-                Última actualización: <span id="lastUpdate">--</span>
+                🕐 Última actualización: <span id="lastUpdate">--</span>
+            </div>
+        </div>
+
+        <!-- Delete Modal -->
+        <div id="deleteModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-title">🗑️ Opciones de Borrado</div>
+                <button class="btn btn-danger" onclick="deleteRecent(50)" style="width: 100%; margin-bottom: 0.75rem;">
+                    Borrar últimas 50
+                </button>
+                <button class="btn btn-danger" onclick="deleteRecent(100)" style="width: 100%; margin-bottom: 0.75rem;">
+                    Borrar últimas 100
+                </button>
+                <button class="btn btn-danger" onclick="deleteRecent(500)" style="width: 100%; margin-bottom: 0.75rem;">
+                    Borrar últimas 500
+                </button>
+                <button class="btn btn-danger" onclick="deleteAll()" style="width: 100%; margin-bottom: 1rem;">
+                    🚨 Borrar TODO
+                </button>
+                <button class="btn btn-primary" onclick="closeDeleteMenu()" style="width: 100%;">
+                    ❌ Cancelar
+                </button>
             </div>
         </div>
     </div>
@@ -332,15 +448,19 @@
         const db = firebase.database();
 
         let currentUser = null;
-        let historyData = [];
+        let allData = []; // TODOS los datos
+        let filteredData = []; // Datos filtrados
         let charts = {};
+        let gauges = {};
+        let chartRange = 'hour';
 
         const THRESHOLDS = {
-            CO: {good: 9, moderate: 35, critical: 50},
-            CO2: {good: 1000, moderate: 2000, critical: 5000},
-            PM25: {good: 12, moderate: 35.4, critical: 55.4},
-            PM10: {good: 54, moderate: 154, critical: 254},
-            Temp: {good: 25, moderate: 30, critical: 35}
+            CO: {good: 9, moderate: 35, critical: 50, max: 100},
+            CO2: {good: 1000, moderate: 2000, critical: 5000, max: 5000},
+            PM25: {good: 12, moderate: 35.4, critical: 55.4, max: 150},
+            PM10: {good: 54, moderate: 154, critical: 254, max: 350},
+            Temp: {good: 25, moderate: 30, critical: 35, max: 50},
+            Pressure: {good: 1013, moderate: 1020, critical: 1030, max: 1050}
         };
 
         // Login
@@ -382,13 +502,91 @@
 
         // Init
         function initApp() {
-            console.log('🚀 Iniciando con Firebase...');
-            setupFirebase();
+            console.log('🚀 Iniciando AirGuard 4.0...');
+            initGauges();
             initCharts();
-            updateBanner('connected', 'Conectado - Leyendo Firebase');
+            setupFirebase();
+            updateBanner('connected', 'Conectado - Tiempo real');
+            
+            // Set date inputs to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dateFrom').value = today;
+            document.getElementById('dateTo').value = today;
         }
 
-        // Firebase - ÚNICA FUENTE DE DATOS
+        // Gauges
+        function initGauges() {
+            const gaugeIds = ['CO', 'CO2', 'PM25', 'PM10', 'Temp', 'Pressure'];
+            gaugeIds.forEach(id => {
+                const canvas = document.getElementById('gauge' + id);
+                const ctx = canvas.getContext('2d');
+                gauges[id] = { canvas, ctx, value: 0 };
+                drawGauge(id, 0);
+            });
+        }
+
+        function drawGauge(id, value) {
+            const gauge = gauges[id];
+            const ctx = gauge.ctx;
+            const canvas = gauge.canvas;
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+            const radius = Math.min(w, h) / 2 - 10;
+
+            ctx.clearRect(0, 0, w, h);
+
+            // Background arc
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0.75 * Math.PI, 2.25 * Math.PI);
+            ctx.lineWidth = 12;
+            ctx.strokeStyle = '#E5E7EB';
+            ctx.stroke();
+
+            // Calculate percentage
+            const threshold = THRESHOLDS[id];
+            const percent = Math.min(value / threshold.max, 1);
+            const endAngle = 0.75 * Math.PI + percent * 1.5 * Math.PI;
+
+            // Value arc with gradient
+            const gradient = ctx.createLinearGradient(0, 0, w, 0);
+            if (value <= threshold.good) {
+                gradient.addColorStop(0, '#10B981');
+                gradient.addColorStop(1, '#34D399');
+            } else if (value <= threshold.moderate) {
+                gradient.addColorStop(0, '#F59E0B');
+                gradient.addColorStop(1, '#FBBF24');
+            } else {
+                gradient.addColorStop(0, '#EF4444');
+                gradient.addColorStop(1, '#F87171');
+            }
+
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0.75 * Math.PI, endAngle);
+            ctx.lineWidth = 12;
+            ctx.strokeStyle = gradient;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+
+            // Center circle (platinum style)
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius - 20, 0, 2 * Math.PI);
+            ctx.fillStyle = '#5e5e5e';
+            ctx.fill();
+
+            // Inner shine
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius - 22, 0, 2 * Math.PI);
+            ctx.fillStyle = '#858585';
+            ctx.fill();
+        }
+
+        function updateGauge(id, value) {
+            drawGauge(id, value);
+        }
+
+        // Firebase - CARGAR TODO
         function setupFirebase() {
             db.ref('.info/connected').on('value', snap => {
                 const connected = snap.val();
@@ -400,32 +598,33 @@
                 }
             });
 
-            // Escuchar cambios en /lecturas
+            // Escuchar última lectura
             db.ref('lecturas').limitToLast(1).on('child_added', snap => {
                 const data = snap.val();
-                console.log('📡 Datos nuevos:', data);
+                console.log('📡 Nueva lectura:', data);
                 processData(data);
             });
 
             db.ref('lecturas').limitToLast(1).on('child_changed', snap => {
                 const data = snap.val();
-                console.log('📡 Datos actualizados:', data);
+                console.log('📡 Lectura actualizada:', data);
                 processData(data);
             });
 
-            // Cargar historial
-            db.ref('lecturas').limitToLast(100).on('value', snap => {
+            // Cargar TODOS los datos (sin límite)
+            db.ref('lecturas').on('value', snap => {
                 const data = snap.val();
                 if (data) {
-                    historyData = Object.entries(data).map(([key, val]) => ({
+                    allData = Object.entries(data).map(([key, val]) => ({
                         ...val,
                         id: key,
                         timestamp: val.timestamp ? new Date(val.timestamp).getTime() : Date.now()
                     })).sort((a,b) => b.timestamp - a.timestamp);
 
-                    console.log('📊 Historial:', historyData.length, 'lecturas');
-                    updateHistoryTable();
-                    updateCharts();
+                    console.log('📊 Base de datos completa cargada:', allData.length, 'registros');
+                    document.getElementById('totalCount').textContent = allData.length;
+                    
+                    filterTime('all'); // Mostrar todo por defecto
                 }
             });
         }
@@ -441,7 +640,6 @@
                 Pressure: parseFloat(data.Pressure) || 0,
                 Altitude: parseFloat(data.Altitude) || 0
             };
-            console.log('🔄 Procesado:', parsed);
             updateSensors(parsed);
         }
 
@@ -449,17 +647,27 @@
             const co = (data.MQ7 * 0.005).toFixed(1);
             const co2 = (data.MQ135 * 0.5).toFixed(0);
 
+            // Update values
             document.getElementById('valCO').textContent = co;
             document.getElementById('valCO2').textContent = co2;
-            document.getElementById('valPM25').textContent = data['PM2.5'] || '--';
-            document.getElementById('valPM10').textContent = data.PM10 || '--';
+            document.getElementById('valPM25').textContent = data['PM2.5'] || 0;
+            document.getElementById('valPM10').textContent = data.PM10 || 0;
             document.getElementById('valTemp').textContent = data.Temperature.toFixed(1);
             document.getElementById('valPressure').textContent = data.Pressure.toFixed(1);
             document.getElementById('valMQ7').textContent = data.MQ7;
             document.getElementById('valMQ135').textContent = data.MQ135;
-            document.getElementById('valPM1').textContent = data['PM1.0'];
+            document.getElementById('valPM1').textContent = data['PM1.0'] || 0;
             document.getElementById('valAlt').textContent = data.Altitude.toFixed(1);
 
+            // Update gauges
+            updateGauge('CO', parseFloat(co));
+            updateGauge('CO2', parseFloat(co2));
+            updateGauge('PM25', data['PM2.5']);
+            updateGauge('PM10', data.PM10);
+            updateGauge('Temp', data.Temperature);
+            updateGauge('Pressure', data.Pressure);
+
+            // Update status
             updateStatus('CO', parseFloat(co));
             updateStatus('CO2', parseFloat(co2));
             updateStatus('PM25', data['PM2.5']);
@@ -494,11 +702,11 @@
         }
 
         function checkAlerts(values) {
-            if (values.CO > THRESHOLDS.CO.critical) showNotification(`CO crítico: ${values.CO} ppm`);
-            if (values.CO2 > THRESHOLDS.CO2.critical) showNotification(`CO2 crítico: ${values.CO2} ppm`);
-            if (values.PM25 > THRESHOLDS.PM25.critical) showNotification(`PM2.5: ${values.PM25} µg/m³`);
-            if (values.PM10 > THRESHOLDS.PM10.critical) showNotification(`PM10: ${values.PM10} µg/m³`);
-            if (values.Temp > THRESHOLDS.Temp.critical) showNotification(`Temp: ${values.Temp}°C`);
+            if (values.CO > THRESHOLDS.CO.critical) showNotification(`⚠️ CO crítico: ${values.CO} ppm`);
+            if (values.CO2 > THRESHOLDS.CO2.critical) showNotification(`⚠️ CO2 crítico: ${values.CO2} ppm`);
+            if (values.PM25 > THRESHOLDS.PM25.critical) showNotification(`⚠️ PM2.5: ${values.PM25} µg/m³`);
+            if (values.PM10 > THRESHOLDS.PM10.critical) showNotification(`⚠️ PM10: ${values.PM10} µg/m³`);
+            if (values.Temp > THRESHOLDS.Temp.critical) showNotification(`⚠️ Temperatura: ${values.Temp}°C`);
         }
 
         function showNotification(text) {
@@ -515,11 +723,73 @@
             document.getElementById('bannerText').textContent = text;
         }
 
-        // History
+        // Filters
+        function filterTime(period) {
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const now = new Date();
+            let startTime;
+
+            switch(period) {
+                case 'today':
+                    startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                    break;
+                case 'yesterday':
+                    startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1).getTime();
+                    const endYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                    filteredData = allData.filter(d => d.timestamp >= startTime && d.timestamp < endYesterday);
+                    document.getElementById('recordCount').textContent = filteredData.length;
+                    updateHistoryTable();
+                    updateCharts();
+                    return;
+                case 'week':
+                    startTime = now.getTime() - (7 * 24 * 60 * 60 * 1000);
+                    break;
+                case 'month':
+                    startTime = now.getTime() - (30 * 24 * 60 * 60 * 1000);
+                    break;
+                case 'all':
+                default:
+                    filteredData = [...allData];
+                    document.getElementById('recordCount').textContent = filteredData.length;
+                    updateHistoryTable();
+                    updateCharts();
+                    return;
+            }
+
+            filteredData = allData.filter(d => d.timestamp >= startTime);
+            document.getElementById('recordCount').textContent = filteredData.length;
+            updateHistoryTable();
+            updateCharts();
+        }
+
+        function filterCustomRange() {
+            const from = new Date(document.getElementById('dateFrom').value).getTime();
+            const to = new Date(document.getElementById('dateTo').value).getTime() + (24 * 60 * 60 * 1000);
+
+            if (isNaN(from) || isNaN(to)) {
+                alert('Por favor selecciona fechas válidas');
+                return;
+            }
+
+            filteredData = allData.filter(d => d.timestamp >= from && d.timestamp <= to);
+            document.getElementById('recordCount').textContent = filteredData.length;
+            
+            // Remove active from buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            
+            updateHistoryTable();
+            updateCharts();
+        }
+
+        // History Table
         function updateHistoryTable() {
             const tbody = document.getElementById('historyTable');
             tbody.innerHTML = '';
-            historyData.slice(0, 50).forEach(item => {
+            
+            filteredData.forEach(item => {
                 const co = item.MQ7 ? (parseFloat(item.MQ7) * 0.005).toFixed(1) : '--';
                 const co2 = item.MQ135 ? (parseFloat(item.MQ135) * 0.5).toFixed(0) : '--';
                 const tr = document.createElement('tr');
@@ -527,91 +797,252 @@
                     <td>${new Date(item.timestamp).toLocaleString('es-MX')}</td>
                     <td>${co}</td>
                     <td>${co2}</td>
-                    <td>${item.PM2_5 || '--'}</td>
-                    <td>${item.PM10 || '--'}</td>
+                    <td>${item.PM2_5 || 0}</td>
+                    <td>${item.PM10 || 0}</td>
                     <td>${item.Temperature || '--'}</td>
                     <td>${item.Pressure || '--'}</td>
+                    <td>${item.Altitude || '--'}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
+        // Export - TODO completo
         function exportExcel() {
-            const ws = XLSX.utils.json_to_sheet(historyData.map(item => ({
+            console.log('📊 Exportando', allData.length, 'registros a Excel...');
+            
+            const ws = XLSX.utils.json_to_sheet(allData.map(item => ({
+                ID: item.id,
                 Fecha: new Date(item.timestamp).toLocaleString('es-MX'),
-                CO: item.MQ7 ? (parseFloat(item.MQ7) * 0.005).toFixed(1) : '',
-                CO2: item.MQ135 ? (parseFloat(item.MQ135) * 0.5).toFixed(0) : '',
+                CO_ppm: item.MQ7 ? (parseFloat(item.MQ7) * 0.005).toFixed(1) : '',
+                CO2_ppm: item.MQ135 ? (parseFloat(item.MQ135) * 0.5).toFixed(0) : '',
+                'PM2.5': item.PM2_5,
+                PM10: item.PM10,
+                'PM1.0': item.PM1_0,
+                Temperatura: item.Temperature,
+                Presión: item.Pressure,
+                Altitud: item.Altitude,
+                MQ7_raw: item.MQ7,
+                MQ135_raw: item.MQ135,
+                Timestamp: item.timestamp
+            })));
+            
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Historial Completo');
+            XLSX.writeFile(wb, `AirGuard_COMPLETO_${new Date().toISOString().split('T')[0]}.xlsx`);
+            
+            alert(`✅ ${allData.length} registros exportados a Excel`);
+        }
+
+        function exportCSV() {
+            console.log('📄 Exportando', allData.length, 'registros a CSV...');
+            
+            const csv = [
+                ['Fecha','CO','CO2','PM2.5','PM10','PM1.0','Temp','Presión','Altitud','MQ7','MQ135'],
+                ...allData.map(item => [
+                    new Date(item.timestamp).toLocaleString('es-MX'),
+                    item.MQ7 ? (parseFloat(item.MQ7) * 0.005).toFixed(1) : '',
+                    item.MQ135 ? (parseFloat(item.MQ135) * 0.5).toFixed(0) : '',
+                    item.PM2_5, item.PM10, item.PM1_0,
+                    item.Temperature, item.Pressure, item.Altitude,
+                    item.MQ7, item.MQ135
+                ])
+            ].map(row => row.join(',')).join('\n');
+
+            const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `AirGuard_COMPLETO_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            
+            alert(`✅ ${allData.length} registros exportados a CSV`);
+        }
+
+        // Delete Functions
+        function showDeleteMenu() {
+            document.getElementById('deleteModal').style.display = 'flex';
+        }
+
+        function closeDeleteMenu() {
+            document.getElementById('deleteModal').style.display = 'none';
+        }
+
+        async function deleteRecent(count) {
+            const password = prompt(`🔒 Para borrar las últimas ${count} lecturas, ingresa la contraseña:`);
+            if (!password) { closeDeleteMenu(); return; }
+            if (password !== 'Monitoreo#2025') { alert('❌ Contraseña incorrecta'); return; }
+            if (!confirm(`⚠️ ¿Borrar las últimas ${count} lecturas?\n\nSe creará backup automático.`)) { 
+                closeDeleteMenu(); return; 
+            }
+
+            const backupData = allData.slice(0, count);
+            exportBackup(backupData, `Backup_${count}_lecturas`);
+
+            try {
+                const toDelete = allData.slice(0, count);
+                const deletePromises = toDelete.map(item => db.ref(`lecturas/${item.id}`).remove());
+                await Promise.all(deletePromises);
+                alert(`✅ ${count} lecturas borradas.\n📦 Backup guardado.`);
+                closeDeleteMenu();
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        async function deleteAll() {
+            const password = prompt('🔒 Contraseña para borrar TODO:');
+            if (!password) { closeDeleteMenu(); return; }
+            if (password !== 'Monitoreo#2025') { alert('❌ Contraseña incorrecta'); return; }
+            if (!confirm('⚠️ ¿Borrar TODO el historial?')) { closeDeleteMenu(); return; }
+            
+            const confirmText = prompt('Escribe: BORRAR TODO');
+            if (confirmText !== 'BORRAR TODO') { 
+                alert('❌ Cancelado'); 
+                closeDeleteMenu(); 
+                return; 
+            }
+
+            exportBackup(allData, 'Backup_COMPLETO');
+
+            try {
+                await db.ref('lecturas').remove();
+                allData = [];
+                filteredData = [];
+                updateHistoryTable();
+                updateCharts();
+                alert('✅ Todo borrado.\n📦 Backup guardado.');
+                closeDeleteMenu();
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        function exportBackup(data, filename) {
+            const ws = XLSX.utils.json_to_sheet(data.map(item => ({
+                ID: item.id,
+                Fecha: new Date(item.timestamp).toLocaleString('es-MX'),
+                MQ7: item.MQ7,
+                MQ135: item.MQ135,
+                'PM1.0': item.PM1_0,
                 'PM2.5': item.PM2_5,
                 PM10: item.PM10,
                 Temperatura: item.Temperature,
                 Presión: item.Pressure,
-                MQ7: item.MQ7,
-                MQ135: item.MQ135,
-                Altitud: item.Altitude
+                Altitud: item.Altitude,
+                Timestamp: item.timestamp
             })));
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Datos');
-            XLSX.writeFile(wb, `AirGuard_${new Date().toISOString().split('T')[0]}.xlsx`);
-        }
-
-        function exportCSV() {
-            const csv = [
-                ['Fecha','CO','CO2','PM2.5','PM10','Temp','Presión'],
-                ...historyData.map(item => [
-                    new Date(item.timestamp).toLocaleString('es-MX'),
-                    item.MQ7 ? (parseFloat(item.MQ7) * 0.005).toFixed(1) : '',
-                    item.MQ135 ? (parseFloat(item.MQ135) * 0.5).toFixed(0) : '',
-                    item.PM2_5, item.PM10, item.Temperature, item.Pressure
-                ])
-            ].map(row => row.join(',')).join('\n');
-
-            const blob = new Blob([csv], {type: 'text/csv'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `AirGuard_${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-        }
-
-        function clearHistory() {
-            if (confirm('¿Borrar historial?')) {
-                db.ref('lecturas').remove();
-                historyData = [];
-                updateHistoryTable();
-                updateCharts();
-            }
+            XLSX.utils.book_append_sheet(wb, ws, 'Backup');
+            XLSX.writeFile(wb, `${filename}_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
 
         // Charts
         function initCharts() {
-            ['CO', 'CO2', 'PM25', 'PM10', 'Temp', 'Pressure'].forEach(id => {
-                const ctx = document.getElementById('chart' + id).getContext('2d');
-                charts[id] = new Chart(ctx, {
-                    type: 'line',
-                    data: { labels: [], datasets: [{ label: id, data: [], borderColor: '#0088CC', tension: 0.4 }] },
-                    options: { responsive: true, maintainAspectRatio: true, plugins: {legend: {display: false}} }
-                });
+            const ctx1 = document.getElementById('chartCO').getContext('2d');
+            charts.CO = new Chart(ctx1, {
+                type: 'line',
+                data: { labels: [], datasets: [{label: 'CO (ppm)', data: [], borderColor: '#5e5e5e', tension: 0.4}] },
+                options: { responsive: true, maintainAspectRatio: true }
+            });
+
+            const ctx2 = document.getElementById('chartCO2').getContext('2d');
+            charts.CO2 = new Chart(ctx2, {
+                type: 'line',
+                data: { labels: [], datasets: [{label: 'CO2 (ppm)', data: [], borderColor: '#0088CC', tension: 0.4}] },
+                options: { responsive: true, maintainAspectRatio: true }
+            });
+
+            const ctx3 = document.getElementById('chartPM').getContext('2d');
+            charts.PM = new Chart(ctx3, {
+                type: 'line',
+                data: { 
+                    labels: [], 
+                    datasets: [
+                        {label: 'PM2.5', data: [], borderColor: '#F59E0B', tension: 0.4},
+                        {label: 'PM10', data: [], borderColor: '#EF4444', tension: 0.4}
+                    ] 
+                },
+                options: { responsive: true, maintainAspectRatio: true }
+            });
+
+            const ctx4 = document.getElementById('chartTemp').getContext('2d');
+            charts.Temp = new Chart(ctx4, {
+                type: 'line',
+                data: { labels: [], datasets: [{label: 'Temperatura (°C)', data: [], borderColor: '#10B981', tension: 0.4}] },
+                options: { responsive: true, maintainAspectRatio: true }
+            });
+
+            const ctx5 = document.getElementById('chartPressure').getContext('2d');
+            charts.Pressure = new Chart(ctx5, {
+                type: 'line',
+                data: { labels: [], datasets: [{label: 'Presión (Pa)', data: [], borderColor: '#8B5CF6', tension: 0.4}] },
+                options: { responsive: true, maintainAspectRatio: true }
             });
         }
 
+        function setChartRange(range) {
+            chartRange = range;
+            document.querySelectorAll('.chart-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            updateCharts();
+        }
+
         function updateCharts() {
-            const data = historyData.slice(0, 50).reverse();
-            const labels = data.map(d => new Date(d.timestamp).toLocaleTimeString('es-MX', {hour: '2-digit', minute: '2-digit'}));
+            let data = [];
+            const now = new Date();
 
-            const datasets = {
-                CO: data.map(d => d.MQ7 ? parseFloat(d.MQ7) * 0.005 : 0),
-                CO2: data.map(d => d.MQ135 ? parseFloat(d.MQ135) * 0.5 : 400),
-                PM25: data.map(d => parseFloat(d.PM2_5) || 0),
-                PM10: data.map(d => parseFloat(d.PM10) || 0),
-                Temp: data.map(d => parseFloat(d.Temperature) || 0),
-                Pressure: data.map(d => parseFloat(d.Pressure) || 0)
-            };
+            switch(chartRange) {
+                case 'hour':
+                    const hourAgo = now.getTime() - (60 * 60 * 1000);
+                    data = filteredData.filter(d => d.timestamp >= hourAgo);
+                    break;
+                case 'day':
+                    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                    data = filteredData.filter(d => d.timestamp >= startOfDay);
+                    break;
+                case 'week':
+                    const weekAgo = now.getTime() - (7 * 24 * 60 * 60 * 1000);
+                    data = filteredData.filter(d => d.timestamp >= weekAgo);
+                    break;
+                case 'month':
+                    const monthAgo = now.getTime() - (30 * 24 * 60 * 60 * 1000);
+                    data = filteredData.filter(d => d.timestamp >= monthAgo);
+                    break;
+                case 'all':
+                default:
+                    data = [...filteredData];
+            }
 
-            Object.keys(charts).forEach(key => {
-                charts[key].data.labels = labels;
-                charts[key].data.datasets[0].data = datasets[key];
-                charts[key].update();
+            data = data.reverse(); // Oldest first for charts
+
+            const labels = data.map(d => {
+                const date = new Date(d.timestamp);
+                if (chartRange === 'hour') return date.toLocaleTimeString('es-MX', {hour: '2-digit', minute: '2-digit'});
+                if (chartRange === 'day') return date.toLocaleTimeString('es-MX', {hour: '2-digit', minute: '2-digit'});
+                return date.toLocaleDateString('es-MX', {month: '2-digit', day: '2-digit', hour: '2-digit'});
             });
+
+            charts.CO.data.labels = labels;
+            charts.CO.data.datasets[0].data = data.map(d => d.MQ7 ? parseFloat(d.MQ7) * 0.005 : 0);
+            charts.CO.update();
+
+            charts.CO2.data.labels = labels;
+            charts.CO2.data.datasets[0].data = data.map(d => d.MQ135 ? parseFloat(d.MQ135) * 0.5 : 400);
+            charts.CO2.update();
+
+            charts.PM.data.labels = labels;
+            charts.PM.data.datasets[0].data = data.map(d => parseFloat(d.PM2_5) || 0);
+            charts.PM.data.datasets[1].data = data.map(d => parseFloat(d.PM10) || 0);
+            charts.PM.update();
+
+            charts.Temp.data.labels = labels;
+            charts.Temp.data.datasets[0].data = data.map(d => parseFloat(d.Temperature) || 0);
+            charts.Temp.update();
+
+            charts.Pressure.data.labels = labels;
+            charts.Pressure.data.datasets[0].data = data.map(d => parseFloat(d.Pressure) || 0);
+            charts.Pressure.update();
         }
 
         function switchTab(tab) {
