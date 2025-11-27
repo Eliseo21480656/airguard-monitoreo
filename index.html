@@ -2,24 +2,34 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AirGuard 4.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>AirGuard 4.0 - ITNL</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         :root {
             --primary: #0088CC; --success: #10B981; --warning: #F59E0B;
             --danger: #EF4444; --bg: #F8F9FA; --card: #FFF;
             --text: #1F2937; --text-light: #6B7280; --border: #E5E7EB;
             --platinum: #5e5e5e; --platinum-light: #858585;
         }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            background: var(--bg); 
+            color: var(--text);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
         
         /* Login */
         .login-container { display: flex; align-items: center; justify-content: center; min-height: 100vh;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1rem; }
         .login-box { background: white; border-radius: 16px; padding: 2rem; width: 100%; max-width: 400px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
-        .login-title { text-align: center; font-size: 2rem; margin-bottom: 2rem; }
+        .login-logo { text-align: center; font-size: 4rem; margin-bottom: 1rem; }
+        .login-title { text-align: center; font-size: 1.8rem; margin-bottom: 0.5rem; font-weight: 700; }
+        .login-subtitle { text-align: center; color: var(--text-light); margin-bottom: 2rem; font-size: 0.9rem; }
         .form-group { margin-bottom: 1.5rem; }
         .form-input { width: 100%; padding: 0.875rem; border: 2px solid var(--border);
             border-radius: 8px; font-size: 1rem; }
@@ -39,17 +49,14 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
         .header-content { display: flex; justify-content: space-between; align-items: center; 
             max-width: 1200px; margin: 0 auto; }
-        .app-title { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
-        .spark { font-size: 1.8rem; animation: sparkle 1.5s infinite; }
-        @keyframes sparkle {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(1.1); }
-        }
+        .app-title { font-size: 1.3rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+        .app-logo { font-size: 1.8rem; }
         .btn-header { background: rgba(255,255,255,0.2); border: none; color: white;
-            padding: 0.75rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600;
-            transition: all 0.3s; }
+            padding: 0.6rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600;
+            transition: all 0.3s; font-size: 0.85rem; }
         .btn-header:hover { background: rgba(255,255,255,0.3); }
-        .container { max-width: 1200px; margin: 0 auto; padding: 1rem; }
+        .header-buttons { display: flex; gap: 0.5rem; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 1rem; padding-bottom: 90px; }
         
         /* Banner */
         .banner { padding: 1rem; border-radius: 12px; margin-bottom: 1rem; display: flex;
@@ -61,7 +68,7 @@
         .dot.disconnected { background: var(--danger); }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         
-        /* Tabs - BOTTOM NAVIGATION (Android Style) */
+        /* Bottom Navigation */
         .tabs { 
             display: flex; 
             justify-content: space-around;
@@ -77,7 +84,6 @@
             box-shadow: 0 -2px 8px rgba(0,0,0,0.15);
             border-top: 2px solid var(--platinum);
         }
-        .tabs::-webkit-scrollbar { display: none; }
         .tab { 
             flex: 1;
             display: flex;
@@ -109,11 +115,6 @@
         .tab:active {
             transform: scale(0.95);
         }
-        
-        /* Agregar padding-bottom al container para que no se tape con bottom nav */
-        .container {
-            padding-bottom: 80px;
-        }
         .tab-content { 
             display: none;
             animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -143,7 +144,7 @@
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
             gap: 1rem;
-            justify-items: center; /* Centrar en móviles */
+            justify-items: center;
             max-width: 100%;
             margin: 0 auto;
         }
@@ -157,6 +158,18 @@
             width: 100%;
             max-width: 180px;
         }
+        .gauge-name { font-weight: 700; color: var(--platinum); margin-bottom: 0.5rem;
+            font-size: 0.95rem; letter-spacing: 0.5px; }
+        .gauge-canvas { margin: 0.5rem auto; image-rendering: -webkit-optimize-contrast; 
+            image-rendering: crisp-edges; }
+        .gauge-value { font-size: 1.5rem; font-weight: 700; color: var(--platinum);
+            margin: 0.5rem 0; }
+        .gauge-unit { font-size: 0.85rem; color: var(--platinum-light); font-weight: 600; }
+        .badge { display: inline-block; padding: 0.35rem 0.75rem; border-radius: 12px;
+            font-size: 0.8rem; font-weight: 600; margin-top: 0.5rem; }
+        .badge.good { background: #D1FAE5; color: #065F46; }
+        .badge.moderate { background: #FEF3C7; color: #92400E; }
+        .badge.unhealthy { background: #FEE2E2; color: #991B1B; }
         .gauge-stats {
             display: flex;
             justify-content: space-around;
@@ -178,29 +191,19 @@
             font-weight: 700;
             color: var(--platinum);
         }
-        .gauge-name { font-weight: 700; color: var(--platinum); margin-bottom: 0.5rem;
-            font-size: 0.95rem; letter-spacing: 0.5px; }
-        .gauge-canvas { margin: 0.5rem auto; }
-        .gauge-value { font-size: 1.5rem; font-weight: 700; color: var(--platinum);
-            margin: 0.5rem 0; }
-        .gauge-unit { font-size: 0.85rem; color: var(--platinum-light); font-weight: 600; }
-        .badge { display: inline-block; padding: 0.35rem 0.75rem; border-radius: 12px;
-            font-size: 0.8rem; font-weight: 600; margin-top: 0.5rem; }
-        .badge.good { background: #D1FAE5; color: #065F46; }
-        .badge.moderate { background: #FEF3C7; color: #92400E; }
-        .badge.unhealthy { background: #FEE2E2; color: #991B1B; }
         
         /* Filters */
         .filters { background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1rem;
             border: 2px solid var(--platinum); }
         .filter-title { font-weight: 700; color: var(--platinum); margin-bottom: 1rem; }
-        .filter-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        .filter-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
             gap: 0.5rem; margin-bottom: 1rem; }
         .filter-btn { padding: 0.75rem; border: 2px solid var(--border); background: white;
             border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s;
-            font-size: 0.9rem; }
+            font-size: 0.85rem; }
         .filter-btn.active { background: var(--platinum); color: white; border-color: var(--platinum); }
         .filter-btn:hover { border-color: var(--platinum); }
+        .filter-btn:active { transform: scale(0.95); }
         .custom-range { display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.5rem;
             align-items: center; }
         .date-input { padding: 0.75rem; border: 2px solid var(--border); border-radius: 8px;
@@ -208,10 +211,10 @@
         
         /* Table */
         .table-container { overflow-x: auto; border-radius: 12px; border: 2px solid var(--platinum); }
-        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
         thead { background: linear-gradient(135deg, var(--platinum) 0%, var(--platinum-light) 100%); 
             color: white; }
-        th, td { padding: 0.875rem; text-align: left; font-size: 0.9rem; }
+        th, td { padding: 0.875rem; text-align: left; font-size: 0.85rem; }
         tbody tr:nth-child(even) { background: #FAFAFA; }
         tbody tr:hover { background: #F0F0F0; }
         .records-info { padding: 0.75rem; background: #F0F0F0; border-radius: 8px;
@@ -220,10 +223,12 @@
         /* Buttons */
         .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 8px;
             cursor: pointer; font-weight: 600; transition: all 0.3s; font-size: 0.9rem; }
+        .btn:active { transform: scale(0.95); }
         .btn-primary { background: var(--primary); color: white; }
         .btn-success { background: var(--success); color: white; }
         .btn-danger { background: var(--danger); color: white; }
         .btn-platinum { background: var(--platinum); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
         
         /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -273,6 +278,7 @@
         canvas { 
             max-height: 350px; 
             width: 100% !important;
+            height: 300px !important;
         }
         
         /* Notification */
@@ -283,6 +289,13 @@
         .notification.show { display: block; }
         @keyframes slideIn { from { transform: translateX(400px); } to { transform: translateX(0); } }
         .notif-title { font-weight: 700; margin-bottom: 0.5rem; }
+        
+        /* Loading */
+        .loading { text-align: center; padding: 2rem; color: var(--text-light); }
+        .spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--platinum);
+            border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;
+            margin: 0 auto 1rem; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         @media (max-width: 768px) {
             .gauge-grid { 
@@ -295,7 +308,7 @@
             .filter-buttons { grid-template-columns: repeat(2, 1fr); }
             .custom-range { grid-template-columns: 1fr; }
             .chart-controls { justify-content: center; }
-            canvas { max-height: 200px; }
+            canvas { max-height: 250px !important; height: 250px !important; }
             .tab {
                 font-size: 0.65rem;
                 padding: 0.4rem;
@@ -303,6 +316,8 @@
             .tab-icon {
                 font-size: 1.3rem;
             }
+            .header-buttons { gap: 0.25rem; }
+            .btn-header { padding: 0.5rem 0.75rem; font-size: 0.75rem; }
         }
         
         @media (max-width: 360px) {
@@ -321,7 +336,9 @@
     <!-- Login -->
     <div id="loginContainer" class="login-container">
         <div class="login-box">
-            <div class="login-title">⚡ AirGuard 4.0</div>
+            <div class="login-logo">🚁</div>
+            <div class="login-title">AirGuard 4.0</div>
+            <div class="login-subtitle">Sistema de Monitoreo Ambiental - ITNL</div>
             <div id="loginError" class="message error"></div>
             <div id="loginSuccess" class="message success"></div>
             <form id="loginForm">
@@ -348,10 +365,14 @@
         <div class="header">
             <div class="header-content">
                 <div class="app-title">
-                    <span class="spark">⚡</span>
+                    <span class="app-logo">🚁</span>
                     <span>AirGuard 4.0</span>
                 </div>
-                <button class="btn-header" onclick="logout()">🚪 Salir</button>
+                <div class="header-buttons">
+                    <button class="btn-header" onclick="refreshData()">🔄</button>
+                    <button class="btn-header" onclick="generateReport()">📄 Reporte</button>
+                    <button class="btn-header" onclick="logout()">🚪</button>
+                </div>
             </div>
         </div>
 
@@ -361,137 +382,11 @@
                 <span id="bannerText">Conectando...</span>
             </div>
 
-            <div class="tabs">
-                <button class="tab active" onclick="switchTab('dashboard')">
-                    <div class="tab-icon">⚡</div>
-                    <div>Dashboard</div>
-                </button>
-                <button class="tab" onclick="switchTab('adicional')">
-                    <div class="tab-icon">📋</div>
-                    <div>Adicional</div>
-                </button>
-                <button class="tab" onclick="switchTab('historial')">
-                    <div class="tab-icon">📜</div>
-                    <div>Historial</div>
-                </button>
-                <button class="tab" onclick="switchTab('graficas')">
-                    <div class="tab-icon">📈</div>
-                    <div>Gráficas</div>
-                </button>
-                <button class="tab" onclick="switchTab('prediccion')">
-                    <div class="tab-icon">🔮</div>
-                    <div>Predicción</div>
-                </button>
-            </div>
-
             <!-- Dashboard -->
             <div id="dashboard" class="tab-content active">
                 <div class="card">
                     <div class="card-header">⚡ Variables Críticas</div>
-                    <div class="gauge-grid">
-                        <div class="gauge-container">
-                            <div class="gauge-name">CO</div>
-                            <canvas id="gaugeCO" class="gauge-canvas" width="120" height="120"></canvas>
-                            <div class="gauge-value" id="valCO">--</div>
-                            <div class="gauge-unit">ppm</div>
-                            <div class="badge good" id="statCO">Sin datos</div>
-                            <div class="gauge-stats">
-                                <div class="gauge-stat">
-                                    <div class="gauge-stat-label">Mín</div>
-                                    <div class="gauge-stat-value" id="minCO">--</div>
-                                </div>
-                                <div class="gauge-stat">
-                                    <div class="gauge-stat-label">Máx</div>
-                                    <div class="gauge-stat-value" id="maxCO">--</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="gauge-container">
-                            <div class="gauge-name">CO2</div>
-                            <canvas id="gaugeCO2" class="gauge-canvas" width="120" height="120"></canvas>
-                            <div class="gauge-value" id="valCO2">--</div>
-                            <div class="gauge-unit">ppm</div>
-                            <div class="badge good" id="statCO2">Sin datos</div>
-                            <div class="gauge-stats">
-                                <div class="gauge-stat">
-                                    <div class="gauge-stat-label">Mín</div>
-                                    <div class="gauge-stat-value" id="minCO2">--</div>
-                                </div>
-                                <div class="gauge-stat">
-                                    <div class="gauge-stat-label">Máx</div>
-                                    <div class="gauge-stat-value" id="maxCO2">--</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="gauge-container">
-                            <div class="gauge-name">PM2.5</div>
-                            <canvas id="gaugePM25" class="gauge-canvas" width="120" height="120"></canvas>
-                            <div class="gauge-value" id="valPM25">--</div>
-                            <div class="gauge-unit">µg/m³</div>
-                            <div class="badge good" id="statPM25">Sin datos</div>
-                            <div class="gauge-stats">
-                                <div class="gauge-stat">
-                                    <div class="gauge-stat-label">Mín</div>
-                                    <div class="gauge-stat-value" id="minPM25">--</div>
-                                </div>
-                                <div class="gauge-stat">
-                                    <div class="gauge-stat-label">Máx</div>
-                                    <div class="gauge-stat-value" id="maxPM25">--</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="gauge-container">
-                            <div class="gauge-name">PM10</div>
-                            <canvas id="gaugePM10" class="gauge-canvas" width="120" height="120"></canvas>
-                            <div class="gauge-value" id="valPM10">--</div>
-                            <div class="gauge-unit">µg/m³</div>
-                            <div class="badge good" id="statPM10">Sin datos</div>
-                            <div class="gauge-stats">
-                                <div class="gauge-stat">
-                                    <div class="gauge-stat-label">Mín</div>
-                                    <div class="gauge-stat-value" id="minPM10">--</div>
-                                </div>
-                                <div class="gauge-stat">
-                                    <div class="gauge-stat-label">Máx</div>
-                                    <div class="gauge-stat-value" id="maxPM10">--</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="gauge-container">
-                            <div class="gauge-name">TEMP</div>
-                            <canvas id="gaugeTemp" class="gauge-canvas" width="120" height="120"></canvas>
-                            <div class="gauge-value" id="valTemp">--</div>
-                            <div class="gauge-unit">°C</div>
-                            <div class="badge good">Normal</div>
-                            <div class="gauge-stats">
-                                <div class="gauge-stat">
-                                    <div class="gauge-stat-label">Mín</div>
-                                    <div class="gauge-stat-value" id="minTemp">--</div>
-                                </div>
-                                <div class="gauge-stat">
-                                    <div class="gauge-stat-label">Máx</div>
-                                    <div class="gauge-stat-value" id="maxTemp">--</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="gauge-container">
-                            <div class="gauge-name">PRESIÓN</div>
-                            <canvas id="gaugePressure" class="gauge-canvas" width="120" height="120"></canvas>
-                            <div class="gauge-value" id="valPressure">--</div>
-                            <div class="gauge-unit">Pa</div>
-                            <div class="badge good">Normal</div>
-                            <div class="gauge-stats">
-                                <div class="gauge-stat">
-                                    <div class="gauge-stat-label">Mín</div>
-                                    <div class="gauge-stat-value" id="minPressure">--</div>
-                                </div>
-                                <div class="gauge-stat">
-                                    <div class="gauge-stat-label">Máx</div>
-                                    <div class="gauge-stat-value" id="maxPressure">--</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="gauge-grid" id="dashboardGauges"></div>
                 </div>
             </div>
 
@@ -529,10 +424,10 @@
                 <div class="card">
                     <div class="card-header">📜 Historial Completo</div>
                     
-                    <!-- Filters -->
                     <div class="filters">
                         <div class="filter-title">🔍 Filtrar por Tiempo</div>
                         <div class="filter-buttons">
+                            <button class="filter-btn" onclick="filterTime('first50')">Primeros 50</button>
                             <button class="filter-btn active" onclick="filterTime('all')">Todo</button>
                             <button class="filter-btn" onclick="filterTime('today')">Hoy</button>
                             <button class="filter-btn" onclick="filterTime('yesterday')">Ayer</button>
@@ -551,8 +446,8 @@
                     </div>
 
                     <div style="margin-bottom: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                        <button class="btn btn-success" onclick="exportExcel()">📊 Excel Completo</button>
-                        <button class="btn btn-primary" onclick="exportCSV()">📄 CSV Completo</button>
+                        <button class="btn btn-success" onclick="exportExcel()">📊 Excel</button>
+                        <button class="btn btn-primary" onclick="exportCSV()">📄 CSV</button>
                         <button class="btn btn-danger" onclick="showDeleteMenu()">🗑️ Borrar</button>
                     </div>
                     
@@ -560,8 +455,9 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Fecha y Hora</th><th>CO</th><th>CO2</th><th>PM2.5</th>
-                                    <th>PM10</th><th>Temp</th><th>Presión</th><th>Alt</th>
+                                    <th>Fecha y Hora</th><th>CO</th><th>CO2</th>
+                                    <th>PM1.0</th><th>PM2.5</th><th>PM10</th>
+                                    <th>Temp</th><th>Presión</th>
                                 </tr>
                             </thead>
                             <tbody id="historyTable"></tbody>
@@ -572,12 +468,17 @@
 
             <!-- Gráficas -->
             <div id="graficas" class="tab-content">
-                <!-- Controles FUERA de las gráficas -->
                 <div class="card" style="margin-bottom: 1rem; background: linear-gradient(135deg, var(--platinum) 0%, var(--platinum-light) 100%);">
                     <div style="color: white; font-weight: 700; margin-bottom: 1rem;">
-                        ⏱️ Rango de Tiempo
+                        ⏱️ Rango de Tiempo para Gráficas
                     </div>
                     <div class="chart-controls">
+                        <button class="chart-btn" onclick="setChartRange('last7')" style="background: white; color: var(--platinum);">
+                            Últimas 7
+                        </button>
+                        <button class="chart-btn" onclick="setChartRange('last10')" style="background: white; color: var(--platinum);">
+                            Últimas 10
+                        </button>
                         <button class="chart-btn active" onclick="setChartRange('last50')" style="background: white; color: var(--platinum);">
                             Últimas 50
                         </button>
@@ -593,56 +494,24 @@
                         <button class="chart-btn" onclick="setChartRange('week')" style="background: white; color: var(--platinum);">
                             7 Días
                         </button>
-                        <button class="chart-btn" onclick="setChartRange('all')" style="background: white; color: var(--platinum);">
-                            Todo
-                        </button>
+                    </div>
+                    <div class="custom-range" style="margin-top: 1rem;">
+                        <input type="date" id="chartDateFrom" class="date-input" style="background: white;">
+                        <input type="date" id="chartDateTo" class="date-input" style="background: white;">
+                        <button class="btn btn-primary" onclick="filterChartCustomRange()">Aplicar</button>
                     </div>
                     <div style="color: white; font-size: 0.85rem; margin-top: 0.5rem; text-align: center;">
                         📊 Mostrando <span id="chartDataCount">0</span> lecturas
                     </div>
                 </div>
 
-                <!-- Gráficas individuales -->
-                <div class="card">
-                    <div class="chart-wrapper">
-                        <div class="chart-title">CO (Monóxido de Carbono)</div>
-                        <canvas id="chartCO"></canvas>
-                    </div>
-                </div>
-                
-                <div class="card">
-                    <div class="chart-wrapper">
-                        <div class="chart-title">CO2 (Dióxido de Carbono)</div>
-                        <canvas id="chartCO2"></canvas>
-                    </div>
-                </div>
-                
-                <div class="card">
-                    <div class="chart-wrapper">
-                        <div class="chart-title">PM2.5 y PM10 (Partículas)</div>
-                        <canvas id="chartPM"></canvas>
-                    </div>
-                </div>
-                
-                <div class="card">
-                    <div class="chart-wrapper">
-                        <div class="chart-title">Temperatura</div>
-                        <canvas id="chartTemp"></canvas>
-                    </div>
-                </div>
-                
-                <div class="card">
-                    <div class="chart-wrapper">
-                        <div class="chart-title">Presión Atmosférica</div>
-                        <canvas id="chartPressure"></canvas>
-                    </div>
-                </div>
+                <div id="chartsContainer"></div>
             </div>
 
             <!-- Predicción -->
             <div id="prediccion" class="tab-content">
                 <div class="card">
-                    <div class="card-header">🔮 Predicciones y Análisis</div>
+                    <div class="card-header">📐 Análisis y Predicciones</div>
                     <div style="padding: 3rem; text-align: center; color: var(--text-light);">
                         <div style="font-size: 4rem; margin-bottom: 1rem;">📊</div>
                         <h3>Sección en Desarrollo</h3>
@@ -655,6 +524,30 @@
             <div style="text-align: center; color: var(--text-light); font-size: 0.85rem; margin-top: 1rem;">
                 🕐 Última actualización: <span id="lastUpdate">--</span>
             </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('dashboard')">
+                <div class="tab-icon">⚡</div>
+                <div>Dashboard</div>
+            </button>
+            <button class="tab" onclick="switchTab('adicional')">
+                <div class="tab-icon">📋</div>
+                <div>Adicional</div>
+            </button>
+            <button class="tab" onclick="switchTab('historial')">
+                <div class="tab-icon">📜</div>
+                <div>Historial</div>
+            </button>
+            <button class="tab" onclick="switchTab('graficas')">
+                <div class="tab-icon">📈</div>
+                <div>Gráficas</div>
+            </button>
+            <button class="tab" onclick="switchTab('prediccion')">
+                <div class="tab-icon">📐</div>
+                <div>Análisis</div>
+            </button>
         </div>
 
         <!-- Delete Modal -->
@@ -685,6 +578,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <script>
         const firebaseConfig = {
@@ -701,20 +595,37 @@
         const db = firebase.database();
 
         let currentUser = null;
-        let allData = []; // TODOS los datos
-        let filteredData = []; // Datos filtrados
+        let allData = [];
+        let filteredData = [];
         let charts = {};
         let gauges = {};
-        let chartRange = 'last50'; // DEFAULT: Mostrar últimas 50 para mejor visualización
+        let chartRange = 'last50';
+
+        // 7 variables principales del dashboard
+        const DASHBOARD_VARS = [
+            {id: 'CO', name: 'CO', unit: 'ppm', max: 100},
+            {id: 'CO2', name: 'CO2', unit: 'ppm', max: 5000},
+            {id: 'PM1', name: 'PM1.0', unit: 'µg/m³', max: 100},
+            {id: 'PM25', name: 'PM2.5', unit: 'µg/m³', max: 150},
+            {id: 'PM10', name: 'PM10', unit: 'µg/m³', max: 350},
+            {id: 'Temp', name: 'TEMP', unit: '°C', max: 50},
+            {id: 'Pressure', name: 'PRESIÓN', unit: 'Pa', max: 1050}
+        ];
 
         const THRESHOLDS = {
             CO: {good: 9, moderate: 35, critical: 50, max: 100},
             CO2: {good: 1000, moderate: 2000, critical: 5000, max: 5000},
+            PM1: {good: 10, moderate: 25, critical: 50, max: 100},
             PM25: {good: 12, moderate: 35.4, critical: 55.4, max: 150},
             PM10: {good: 54, moderate: 154, critical: 254, max: 350},
             Temp: {good: 25, moderate: 30, critical: 35, max: 50},
             Pressure: {good: 1013, moderate: 1020, critical: 1030, max: 1050}
         };
+
+        const gaugeStats = {};
+        DASHBOARD_VARS.forEach(v => {
+            gaugeStats[v.id] = {min: Infinity, max: -Infinity};
+        });
 
         // Login
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
@@ -753,28 +664,52 @@
             document.getElementById('loginContainer').style.display = 'flex';
         }
 
-        // Init
         function initApp() {
             console.log('🚀 Iniciando AirGuard 4.0...');
-            initGauges();
-            initCharts();
+            createDashboardGauges();
+            createCharts();
             setupFirebase();
             updateBanner('connected', 'Conectado - Tiempo real');
             
-            // Set date inputs to today
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('dateFrom').value = today;
             document.getElementById('dateTo').value = today;
+            document.getElementById('chartDateFrom').value = today;
+            document.getElementById('chartDateTo').value = today;
+            
+            // Actualizar cada 10 segundos
+            setInterval(checkForUpdates, 10000);
         }
 
-        // Gauges
-        function initGauges() {
-            const gaugeIds = ['CO', 'CO2', 'PM25', 'PM10', 'Temp', 'Pressure'];
-            gaugeIds.forEach(id => {
-                const canvas = document.getElementById('gauge' + id);
+        function createDashboardGauges() {
+            const container = document.getElementById('dashboardGauges');
+            container.innerHTML = DASHBOARD_VARS.map(v => `
+                <div class="gauge-container">
+                    <div class="gauge-name">${v.name}</div>
+                    <canvas id="gauge${v.id}" class="gauge-canvas" width="140" height="140"></canvas>
+                    <div class="gauge-value" id="val${v.id}">--</div>
+                    <div class="gauge-unit">${v.unit}</div>
+                    <div class="badge good" id="stat${v.id}">Sin datos</div>
+                    <div class="gauge-stats">
+                        <div class="gauge-stat">
+                            <div class="gauge-stat-label">Mín</div>
+                            <div class="gauge-stat-value" id="min${v.id}">--</div>
+                        </div>
+                        <div class="gauge-stat">
+                            <div class="gauge-stat-label">Máx</div>
+                            <div class="gauge-stat-value" id="max${v.id}">--</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            DASHBOARD_VARS.forEach(v => {
+                const canvas = document.getElementById('gauge' + v.id);
                 const ctx = canvas.getContext('2d');
-                gauges[id] = { canvas, ctx, value: 0 };
-                drawGauge(id, 0);
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                gauges[v.id] = { canvas, ctx, value: 0 };
+                drawGauge(v.id, 0);
             });
         }
 
@@ -782,22 +717,27 @@
             const gauge = gauges[id];
             const ctx = gauge.ctx;
             const canvas = gauge.canvas;
+            const dpr = window.devicePixelRatio || 1;
+            
+            // High DPI support
             const w = canvas.width;
             const h = canvas.height;
+            canvas.style.width = w + 'px';
+            canvas.style.height = h + 'px';
+            
             const cx = w / 2;
             const cy = h / 2;
-            const radius = Math.min(w, h) / 2 - 10;
+            const radius = Math.min(w, h) / 2 - 12;
 
             ctx.clearRect(0, 0, w, h);
 
             // Background arc
             ctx.beginPath();
             ctx.arc(cx, cy, radius, 0.75 * Math.PI, 2.25 * Math.PI);
-            ctx.lineWidth = 12;
+            ctx.lineWidth = 14;
             ctx.strokeStyle = '#E5E7EB';
             ctx.stroke();
 
-            // Calculate percentage
             const threshold = THRESHOLDS[id];
             const percent = Math.min(value / threshold.max, 1);
             const endAngle = 0.75 * Math.PI + percent * 1.5 * Math.PI;
@@ -817,25 +757,22 @@
 
             ctx.beginPath();
             ctx.arc(cx, cy, radius, 0.75 * Math.PI, endAngle);
-            ctx.lineWidth = 12;
+            ctx.lineWidth = 14;
             ctx.strokeStyle = gradient;
             ctx.lineCap = 'round';
             ctx.stroke();
 
-            // Center circle (platinum style)
+            // Center circle
             ctx.beginPath();
-            ctx.arc(cx, cy, radius - 20, 0, 2 * Math.PI);
-            ctx.fillStyle = '#5e5e5e';
+            ctx.arc(cx, cy, radius - 24, 0, 2 * Math.PI);
+            const centerGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius - 24);
+            centerGradient.addColorStop(0, '#858585');
+            centerGradient.addColorStop(1, '#5e5e5e');
+            ctx.fillStyle = centerGradient;
             ctx.fill();
 
-            // Inner shine
-            ctx.beginPath();
-            ctx.arc(cx, cy, radius - 22, 0, 2 * Math.PI);
-            ctx.fillStyle = '#858585';
-            ctx.fill();
-
-            // AGUJA/BUJÍA (Needle)
-            const needleLength = radius - 25;
+            // Needle
+            const needleLength = radius - 28;
             const needleAngle = 0.75 * Math.PI + percent * 1.5 * Math.PI;
             const needleX = cx + Math.cos(needleAngle) * needleLength;
             const needleY = cy + Math.sin(needleAngle) * needleLength;
@@ -844,7 +781,7 @@
             ctx.beginPath();
             ctx.moveTo(cx + 2, cy + 2);
             ctx.lineTo(needleX + 2, needleY + 2);
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 4;
             ctx.strokeStyle = 'rgba(0,0,0,0.3)';
             ctx.lineCap = 'round';
             ctx.stroke();
@@ -853,14 +790,14 @@
             ctx.beginPath();
             ctx.moveTo(cx, cy);
             ctx.lineTo(needleX, needleY);
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 4;
             ctx.strokeStyle = '#ffffff';
             ctx.lineCap = 'round';
             ctx.stroke();
 
-            // Needle center bolt
+            // Center bolt
             ctx.beginPath();
-            ctx.arc(cx, cy, 4, 0, 2 * Math.PI);
+            ctx.arc(cx, cy, 5, 0, 2 * Math.PI);
             ctx.fillStyle = '#ffffff';
             ctx.fill();
             ctx.strokeStyle = '#5e5e5e';
@@ -873,16 +810,6 @@
             updateGaugeStats(id, value);
         }
 
-        // Estadísticas por gauge
-        const gaugeStats = {
-            CO: {min: Infinity, max: -Infinity},
-            CO2: {min: Infinity, max: -Infinity},
-            PM25: {min: Infinity, max: -Infinity},
-            PM10: {min: Infinity, max: -Infinity},
-            Temp: {min: Infinity, max: -Infinity},
-            Pressure: {min: Infinity, max: -Infinity}
-        };
-
         function updateGaugeStats(id, value) {
             if (value < gaugeStats[id].min) gaugeStats[id].min = value;
             if (value > gaugeStats[id].max) gaugeStats[id].max = value;
@@ -893,11 +820,11 @@
                 gaugeStats[id].max.toFixed(1) : '--';
         }
 
-        // Firebase - CARGAR TODO
         function setupFirebase() {
+            const deviceId = '0a10aced202194944a053768'; // Tu Device ID
+            
             db.ref('.info/connected').on('value', snap => {
                 const connected = snap.val();
-                console.log('Firebase:', connected ? 'Conectado ✅' : 'Desconectado ❌');
                 if (connected) {
                     updateBanner('connected', 'Conectado - Tiempo real');
                 } else {
@@ -905,35 +832,78 @@
                 }
             });
 
+            // Path: dispositivos/deviceID/lecturas
+            const lecturasRef = db.ref(`dispositivos/${deviceId}/lecturas`);
+
             // Escuchar última lectura
-            db.ref('lecturas').limitToLast(1).on('child_added', snap => {
-                const data = snap.val();
-                console.log('📡 Nueva lectura:', data);
-                processData(data);
+            lecturasRef.limitToLast(1).on('child_added', snap => {
+                processNewestData(snap);
             });
 
-            db.ref('lecturas').limitToLast(1).on('child_changed', snap => {
-                const data = snap.val();
-                console.log('📡 Lectura actualizada:', data);
-                processData(data);
+            lecturasRef.limitToLast(1).on('child_changed', snap => {
+                processNewestData(snap);
             });
 
-            // Cargar TODOS los datos (sin límite)
-            db.ref('lecturas').on('value', snap => {
+            // Cargar TODOS los datos
+            lecturasRef.on('value', snap => {
                 const data = snap.val();
                 if (data) {
-                    allData = Object.entries(data).map(([key, val]) => ({
-                        ...val,
-                        id: key,
-                        timestamp: val.timestamp ? new Date(val.timestamp).getTime() : Date.now()
-                    })).sort((a,b) => b.timestamp - a.timestamp);
+                    allData = [];
+                    
+                    // Recorrer años
+                    Object.entries(data).forEach(([year, months]) => {
+                        // Recorrer meses
+                        Object.entries(months).forEach(([month, days]) => {
+                            // Recorrer días
+                            Object.entries(days).forEach(([day, hours]) => {
+                                // Recorrer horas
+                                Object.entries(hours).forEach(([hour, readings]) => {
+                                    // Recorrer lecturas
+                                    Object.entries(readings).forEach(([id, reading]) => {
+                                        allData.push({
+                                            ...reading,
+                                            id: id,
+                                            year, month, day, hour,
+                                            timestamp: reading.timestamp ? new Date(reading.timestamp).getTime() : Date.now()
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    });
 
-                    console.log('📊 Base de datos completa cargada:', allData.length, 'registros');
+                    allData.sort((a,b) => b.timestamp - a.timestamp);
+                    console.log('📊 Datos cargados:', allData.length);
                     document.getElementById('totalCount').textContent = allData.length;
                     
-                    filterTime('all'); // Mostrar todo por defecto
+                    filterTime('all');
                 }
             });
+        }
+
+        function processNewestData(yearSnap) {
+            // Obtener la lectura más reciente de toda la estructura
+            const yearData = yearSnap.val();
+            let latestReading = null;
+            let latestTimestamp = 0;
+
+            Object.values(yearData).forEach(months => {
+                Object.values(months).forEach(days => {
+                    Object.values(days).forEach(hours => {
+                        Object.values(hours).forEach(reading => {
+                            const ts = reading.timestamp ? new Date(reading.timestamp).getTime() : 0;
+                            if (ts > latestTimestamp) {
+                                latestTimestamp = ts;
+                                latestReading = reading;
+                            }
+                        });
+                    });
+                });
+            });
+
+            if (latestReading) {
+                processData(latestReading);
+            }
         }
 
         function processData(data) {
@@ -954,35 +924,35 @@
             const co = (data.MQ7 * 0.005).toFixed(1);
             const co2 = (data.MQ135 * 0.5).toFixed(0);
 
-            // Update values
             document.getElementById('valCO').textContent = co;
             document.getElementById('valCO2').textContent = co2;
+            document.getElementById('valPM1').textContent = data['PM1.0'] || 0;
             document.getElementById('valPM25').textContent = data['PM2.5'] || 0;
             document.getElementById('valPM10').textContent = data.PM10 || 0;
             document.getElementById('valTemp').textContent = data.Temperature.toFixed(1);
             document.getElementById('valPressure').textContent = data.Pressure.toFixed(1);
             document.getElementById('valMQ7').textContent = data.MQ7;
             document.getElementById('valMQ135').textContent = data.MQ135;
-            document.getElementById('valPM1').textContent = data['PM1.0'] || 0;
             document.getElementById('valAlt').textContent = data.Altitude.toFixed(1);
 
-            // Update gauges
             updateGauge('CO', parseFloat(co));
             updateGauge('CO2', parseFloat(co2));
+            updateGauge('PM1', data['PM1.0']);
             updateGauge('PM25', data['PM2.5']);
             updateGauge('PM10', data.PM10);
             updateGauge('Temp', data.Temperature);
             updateGauge('Pressure', data.Pressure);
 
-            // Update status
             updateStatus('CO', parseFloat(co));
             updateStatus('CO2', parseFloat(co2));
+            updateStatus('PM1', data['PM1.0']);
             updateStatus('PM25', data['PM2.5']);
             updateStatus('PM10', data.PM10);
 
             checkAlerts({
                 CO: parseFloat(co),
                 CO2: parseFloat(co2),
+                PM1: data['PM1.0'],
                 PM25: data['PM2.5'],
                 PM10: data.PM10,
                 Temp: data.Temperature
@@ -1011,6 +981,7 @@
         function checkAlerts(values) {
             if (values.CO > THRESHOLDS.CO.critical) showNotification(`⚠️ CO crítico: ${values.CO} ppm`);
             if (values.CO2 > THRESHOLDS.CO2.critical) showNotification(`⚠️ CO2 crítico: ${values.CO2} ppm`);
+            if (values.PM1 > THRESHOLDS.PM1.critical) showNotification(`⚠️ PM1.0: ${values.PM1} µg/m³`);
             if (values.PM25 > THRESHOLDS.PM25.critical) showNotification(`⚠️ PM2.5: ${values.PM25} µg/m³`);
             if (values.PM10 > THRESHOLDS.PM10.critical) showNotification(`⚠️ PM10: ${values.PM10} µg/m³`);
             if (values.Temp > THRESHOLDS.Temp.critical) showNotification(`⚠️ Temperatura: ${values.Temp}°C`);
@@ -1030,43 +1001,53 @@
             document.getElementById('bannerText').textContent = text;
         }
 
+        function refreshData() {
+            console.log('🔄 Actualizando datos...');
+            showNotification('🔄 Actualizando datos...');
+            // Los listeners de Firebase se encargan de actualizar automáticamente
+        }
+
+        function checkForUpdates() {
+            // Firebase realtime ya actualiza automáticamente
+            console.log('✓ Verificación automática');
+        }
+
+        // CONTINÚA EN SIGUIENTE PARTE...
+
         // Filters
         function filterTime(period) {
-            // Update active button
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            if (event && event.target) event.target.classList.add('active');
 
             const now = new Date();
-            let startTime;
+            let startTime, endTime;
 
             switch(period) {
+                case 'first50':
+                    filteredData = allData.slice(-50).reverse();
+                    break;
                 case 'today':
                     startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                    filteredData = allData.filter(d => d.timestamp >= startTime);
                     break;
                 case 'yesterday':
                     startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1).getTime();
-                    const endYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-                    filteredData = allData.filter(d => d.timestamp >= startTime && d.timestamp < endYesterday);
-                    document.getElementById('recordCount').textContent = filteredData.length;
-                    updateHistoryTable();
-                    updateCharts();
-                    return;
+                    endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                    filteredData = allData.filter(d => d.timestamp >= startTime && d.timestamp < endTime);
+                    break;
                 case 'week':
                     startTime = now.getTime() - (7 * 24 * 60 * 60 * 1000);
+                    filteredData = allData.filter(d => d.timestamp >= startTime);
                     break;
                 case 'month':
                     startTime = now.getTime() - (30 * 24 * 60 * 60 * 1000);
+                    filteredData = allData.filter(d => d.timestamp >= startTime);
                     break;
                 case 'all':
                 default:
                     filteredData = [...allData];
-                    document.getElementById('recordCount').textContent = filteredData.length;
-                    updateHistoryTable();
-                    updateCharts();
-                    return;
             }
 
-            filteredData = allData.filter(d => d.timestamp >= startTime);
             document.getElementById('recordCount').textContent = filteredData.length;
             updateHistoryTable();
             updateCharts();
@@ -1083,15 +1064,11 @@
 
             filteredData = allData.filter(d => d.timestamp >= from && d.timestamp <= to);
             document.getElementById('recordCount').textContent = filteredData.length;
-            
-            // Remove active from buttons
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            
             updateHistoryTable();
             updateCharts();
         }
 
-        // History Table
         function updateHistoryTable() {
             const tbody = document.getElementById('historyTable');
             tbody.innerHTML = '';
@@ -1104,28 +1081,25 @@
                     <td>${new Date(item.timestamp).toLocaleString('es-MX')}</td>
                     <td>${co}</td>
                     <td>${co2}</td>
+                    <td>${item.PM1_0 || 0}</td>
                     <td>${item.PM2_5 || 0}</td>
                     <td>${item.PM10 || 0}</td>
                     <td>${item.Temperature || '--'}</td>
                     <td>${item.Pressure || '--'}</td>
-                    <td>${item.Altitude || '--'}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // Export - TODO completo
         function exportExcel() {
-            console.log('📊 Exportando', allData.length, 'registros a Excel...');
-            
             const ws = XLSX.utils.json_to_sheet(allData.map(item => ({
                 ID: item.id,
                 Fecha: new Date(item.timestamp).toLocaleString('es-MX'),
                 CO_ppm: item.MQ7 ? (parseFloat(item.MQ7) * 0.005).toFixed(1) : '',
                 CO2_ppm: item.MQ135 ? (parseFloat(item.MQ135) * 0.5).toFixed(0) : '',
+                'PM1.0': item.PM1_0,
                 'PM2.5': item.PM2_5,
                 PM10: item.PM10,
-                'PM1.0': item.PM1_0,
                 Temperatura: item.Temperature,
                 Presión: item.Pressure,
                 Altitud: item.Altitude,
@@ -1135,22 +1109,19 @@
             })));
             
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Historial Completo');
-            XLSX.writeFile(wb, `AirGuard_COMPLETO_${new Date().toISOString().split('T')[0]}.xlsx`);
-            
-            alert(`✅ ${allData.length} registros exportados a Excel`);
+            XLSX.utils.book_append_sheet(wb, ws, 'Historial');
+            XLSX.writeFile(wb, `AirGuard_${new Date().toISOString().split('T')[0]}.xlsx`);
+            alert(`✅ ${allData.length} registros exportados`);
         }
 
         function exportCSV() {
-            console.log('📄 Exportando', allData.length, 'registros a CSV...');
-            
             const csv = [
-                ['Fecha','CO','CO2','PM2.5','PM10','PM1.0','Temp','Presión','Altitud','MQ7','MQ135'],
+                ['Fecha','CO','CO2','PM1.0','PM2.5','PM10','Temp','Presión','Alt','MQ7','MQ135'],
                 ...allData.map(item => [
                     new Date(item.timestamp).toLocaleString('es-MX'),
                     item.MQ7 ? (parseFloat(item.MQ7) * 0.005).toFixed(1) : '',
                     item.MQ135 ? (parseFloat(item.MQ135) * 0.5).toFixed(0) : '',
-                    item.PM2_5, item.PM10, item.PM1_0,
+                    item.PM1_0, item.PM2_5, item.PM10,
                     item.Temperature, item.Pressure, item.Altitude,
                     item.MQ7, item.MQ135
                 ])
@@ -1160,13 +1131,11 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `AirGuard_COMPLETO_${new Date().toISOString().split('T')[0]}.csv`;
+            a.download = `AirGuard_${new Date().toISOString().split('T')[0]}.csv`;
             a.click();
-            
-            alert(`✅ ${allData.length} registros exportados a CSV`);
+            alert(`✅ ${allData.length} registros exportados`);
         }
 
-        // Delete Functions
         function showDeleteMenu() {
             document.getElementById('deleteModal').style.display = 'flex';
         }
@@ -1176,21 +1145,29 @@
         }
 
         async function deleteRecent(count) {
-            const password = prompt(`🔒 Para borrar las últimas ${count} lecturas, ingresa la contraseña:`);
-            if (!password) { closeDeleteMenu(); return; }
-            if (password !== 'Monitoreo#2025') { alert('❌ Contraseña incorrecta'); return; }
-            if (!confirm(`⚠️ ¿Borrar las últimas ${count} lecturas?\n\nSe creará backup automático.`)) { 
+            const password = prompt(`🔒 Contraseña para borrar ${count}:`);
+            if (!password || password !== 'Monitoreo#2025') { 
+                if (password) alert('❌ Contraseña incorrecta'); 
+                closeDeleteMenu(); 
+                return; 
+            }
+            if (!confirm(`⚠️ ¿Borrar ${count} lecturas?\n\nBackup automático.`)) { 
                 closeDeleteMenu(); return; 
             }
 
             const backupData = allData.slice(0, count);
-            exportBackup(backupData, `Backup_${count}_lecturas`);
+            exportBackup(backupData, `Backup_${count}`);
 
             try {
+                const deviceId = '0a10aced202194944a053768';
                 const toDelete = allData.slice(0, count);
-                const deletePromises = toDelete.map(item => db.ref(`lecturas/${item.id}`).remove());
-                await Promise.all(deletePromises);
-                alert(`✅ ${count} lecturas borradas.\n📦 Backup guardado.`);
+                
+                await Promise.all(toDelete.map(item => {
+                    const path = `dispositivos/${deviceId}/lecturas/${item.year}/${item.month}/${item.day}/${item.hour}/${item.id}`;
+                    return db.ref(path).remove();
+                }));
+                
+                alert(`✅ ${count} borradas. Backup guardado.`);
                 closeDeleteMenu();
             } catch (error) {
                 alert('❌ Error: ' + error.message);
@@ -1198,27 +1175,25 @@
         }
 
         async function deleteAll() {
-            const password = prompt('🔒 Contraseña para borrar TODO:');
-            if (!password) { closeDeleteMenu(); return; }
-            if (password !== 'Monitoreo#2025') { alert('❌ Contraseña incorrecta'); return; }
-            if (!confirm('⚠️ ¿Borrar TODO el historial?')) { closeDeleteMenu(); return; }
+            const password = prompt('🔒 Contraseña:');
+            if (!password || password !== 'Monitoreo#2025') { 
+                if (password) alert('❌ Incorrecta'); 
+                closeDeleteMenu(); return; 
+            }
+            if (!confirm('⚠️ ¿Borrar TODO?')) { closeDeleteMenu(); return; }
             
             const confirmText = prompt('Escribe: BORRAR TODO');
             if (confirmText !== 'BORRAR TODO') { 
-                alert('❌ Cancelado'); 
-                closeDeleteMenu(); 
-                return; 
+                alert('❌ Cancelado'); closeDeleteMenu(); return; 
             }
 
             exportBackup(allData, 'Backup_COMPLETO');
-
             try {
-                await db.ref('lecturas').remove();
-                allData = [];
-                filteredData = [];
-                updateHistoryTable();
-                updateCharts();
-                alert('✅ Todo borrado.\n📦 Backup guardado.');
+                const deviceId = '0a10aced202194944a053768';
+                await db.ref(`dispositivos/${deviceId}/lecturas`).remove();
+                allData = []; filteredData = [];
+                updateHistoryTable(); updateCharts();
+                alert('✅ Todo borrado. Backup guardado.');
                 closeDeleteMenu();
             } catch (error) {
                 alert('❌ Error: ' + error.message);
@@ -1227,71 +1202,115 @@
 
         function exportBackup(data, filename) {
             const ws = XLSX.utils.json_to_sheet(data.map(item => ({
-                ID: item.id,
-                Fecha: new Date(item.timestamp).toLocaleString('es-MX'),
-                MQ7: item.MQ7,
-                MQ135: item.MQ135,
-                'PM1.0': item.PM1_0,
-                'PM2.5': item.PM2_5,
-                PM10: item.PM10,
-                Temperatura: item.Temperature,
-                Presión: item.Pressure,
-                Altitud: item.Altitude,
-                Timestamp: item.timestamp
+                ID: item.id, Fecha: new Date(item.timestamp).toLocaleString('es-MX'),
+                MQ7: item.MQ7, MQ135: item.MQ135, 'PM1.0': item.PM1_0,
+                'PM2.5': item.PM2_5, PM10: item.PM10, Temp: item.Temperature,
+                Presión: item.Pressure, Alt: item.Altitude, Timestamp: item.timestamp
             })));
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Backup');
             XLSX.writeFile(wb, `${filename}_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
 
-        // Charts
-        function initCharts() {
-            const ctx1 = document.getElementById('chartCO').getContext('2d');
-            charts.CO = new Chart(ctx1, {
-                type: 'line',
-                data: { labels: [], datasets: [{label: 'CO (ppm)', data: [], borderColor: '#5e5e5e', tension: 0.4}] },
-                options: { responsive: true, maintainAspectRatio: true }
-            });
+        // CHARTS - 8 gráficas
+        function createCharts() {
+            const container = document.getElementById('chartsContainer');
+            const chartDefs = [
+                {id: 'CO', title: 'CO (Monóxido de Carbono)', color: '#5e5e5e', unit: 'ppm'},
+                {id: 'CO2', title: 'CO2 (Dióxido de Carbono)', color: '#0088CC', unit: 'ppm'},
+                {id: 'PM1', title: 'PM1.0 (Partículas Ultrafinas)', color: '#10B981', unit: 'µg/m³'},
+                {id: 'PM25', title: 'PM2.5 (Partículas Finas)', color: '#F59E0B', unit: 'µg/m³'},
+                {id: 'PM10', title: 'PM10 (Partículas Gruesas)', color: '#EF4444', unit: 'µg/m³'},
+                {id: 'Temp', title: 'Temperatura', color: '#10B981', unit: '°C'},
+                {id: 'Pressure', title: 'Presión Atmosférica', color: '#8B5CF6', unit: 'Pa'},
+                {id: 'PMAll', title: 'Material Particulado (PM1.0, PM2.5, PM10)', color: null, unit: 'µg/m³'}
+            ];
 
-            const ctx2 = document.getElementById('chartCO2').getContext('2d');
-            charts.CO2 = new Chart(ctx2, {
-                type: 'line',
-                data: { labels: [], datasets: [{label: 'CO2 (ppm)', data: [], borderColor: '#0088CC', tension: 0.4}] },
-                options: { responsive: true, maintainAspectRatio: true }
-            });
+            container.innerHTML = chartDefs.map(c => `
+                <div class="card">
+                    <div class="chart-wrapper">
+                        <div class="chart-title">${c.title}</div>
+                        <canvas id="chart${c.id}"></canvas>
+                    </div>
+                </div>
+            `).join('');
 
-            const ctx3 = document.getElementById('chartPM').getContext('2d');
-            charts.PM = new Chart(ctx3, {
-                type: 'line',
-                data: { 
-                    labels: [], 
-                    datasets: [
-                        {label: 'PM2.5', data: [], borderColor: '#F59E0B', tension: 0.4},
-                        {label: 'PM10', data: [], borderColor: '#EF4444', tension: 0.4}
-                    ] 
+            chartDefs.forEach(c => {
+                const ctx = document.getElementById('chart' + c.id).getContext('2d');
+                if (c.id === 'PMAll') {
+                    charts[c.id] = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: [],
+                            datasets: [
+                                {label: 'PM1.0', data: [], borderColor: '#10B981', tension: 0.4, fill: false},
+                                {label: 'PM2.5', data: [], borderColor: '#F59E0B', tension: 0.4, fill: false},
+                                {label: 'PM10', data: [], borderColor: '#EF4444', tension: 0.4, fill: false}
+                            ]
+                        },
+                        options: getChartOptions()
+                    });
+                } else {
+                    charts[c.id] = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: [],
+                            datasets: [{
+                                label: c.title.split('(')[0].trim(),
+                                data: [],
+                                borderColor: c.color,
+                                tension: 0.4,
+                                fill: false
+                            }]
+                        },
+                        options: getChartOptions()
+                    });
+                }
+            });
+        }
+
+        function getChartOptions() {
+            return {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: {mode: 'index', intersect: false},
+                plugins: {
+                    legend: {display: true, position: 'top'},
+                    tooltip: {mode: 'index', intersect: false}
                 },
-                options: { responsive: true, maintainAspectRatio: true }
-            });
-
-            const ctx4 = document.getElementById('chartTemp').getContext('2d');
-            charts.Temp = new Chart(ctx4, {
-                type: 'line',
-                data: { labels: [], datasets: [{label: 'Temperatura (°C)', data: [], borderColor: '#10B981', tension: 0.4}] },
-                options: { responsive: true, maintainAspectRatio: true }
-            });
-
-            const ctx5 = document.getElementById('chartPressure').getContext('2d');
-            charts.Pressure = new Chart(ctx5, {
-                type: 'line',
-                data: { labels: [], datasets: [{label: 'Presión (Pa)', data: [], borderColor: '#8B5CF6', tension: 0.4}] },
-                options: { responsive: true, maintainAspectRatio: true }
-            });
+                scales: {
+                    x: {
+                        display: true,
+                        grid: {display: true, color: 'rgba(0, 0, 0, 0.05)'},
+                        ticks: {maxRotation: 45, minRotation: 45, autoSkip: true, maxTicksLimit: 15}
+                    },
+                    y: {
+                        display: true,
+                        grid: {display: true, color: 'rgba(0, 0, 0, 0.05)'}
+                    }
+                }
+            };
         }
 
         function setChartRange(range) {
             chartRange = range;
             document.querySelectorAll('.chart-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            if (event && event.target) event.target.classList.add('active');
+            updateCharts();
+        }
+
+        function filterChartCustomRange() {
+            const from = new Date(document.getElementById('chartDateFrom').value).getTime();
+            const to = new Date(document.getElementById('chartDateTo').value).getTime() + (24 * 60 * 60 * 1000);
+
+            if (isNaN(from) || isNaN(to)) {
+                alert('Fechas válidas requeridas');
+                return;
+            }
+
+            chartRange = 'custom';
+            window.customChartRange = {from, to};
+            document.querySelectorAll('.chart-btn').forEach(btn => btn.classList.remove('active'));
             updateCharts();
         }
 
@@ -1300,119 +1319,169 @@
             const now = new Date();
 
             switch(chartRange) {
-                case 'last50':
-                    data = filteredData.slice(0, 50);
-                    break;
-                case 'last100':
-                    data = filteredData.slice(0, 100);
-                    break;
+                case 'last7': data = filteredData.slice(0, 7); break;
+                case 'last10': data = filteredData.slice(0, 10); break;
+                case 'last50': data = filteredData.slice(0, 50); break;
+                case 'last100': data = filteredData.slice(0, 100); break;
                 case 'hour':
-                    const hourAgo = now.getTime() - (60 * 60 * 1000);
-                    data = filteredData.filter(d => d.timestamp >= hourAgo);
+                    data = filteredData.filter(d => d.timestamp >= (now.getTime() - 3600000));
                     break;
                 case 'day':
-                    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-                    data = filteredData.filter(d => d.timestamp >= startOfDay);
+                    data = filteredData.filter(d => d.timestamp >= new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime());
                     break;
                 case 'week':
-                    const weekAgo = now.getTime() - (7 * 24 * 60 * 60 * 1000);
-                    data = filteredData.filter(d => d.timestamp >= weekAgo);
+                    data = filteredData.filter(d => d.timestamp >= (now.getTime() - 7*24*60*60*1000));
                     break;
-                case 'all':
+                case 'custom':
+                    if (window.customChartRange) {
+                        data = filteredData.filter(d => d.timestamp >= window.customChartRange.from && d.timestamp <= window.customChartRange.to);
+                    }
+                    break;
                 default:
-                    data = [...filteredData];
+                    data = filteredData.slice(0, 50);
             }
 
-            data = data.reverse(); // Oldest first for charts
-            
-            // Actualizar contador
+            data = data.reverse();
             document.getElementById('chartDataCount').textContent = data.length;
 
             const labels = data.map(d => {
                 const date = new Date(d.timestamp);
-                if (chartRange === 'last50' || chartRange === 'last100' || chartRange === 'hour') {
-                    return date.toLocaleTimeString('es-MX', {hour: '2-digit', minute: '2-digit'});
-                }
-                if (chartRange === 'day') {
+                if (['last7','last10','last50','last100','hour'].includes(chartRange)) {
                     return date.toLocaleTimeString('es-MX', {hour: '2-digit', minute: '2-digit'});
                 }
                 return date.toLocaleDateString('es-MX', {month: '2-digit', day: '2-digit', hour: '2-digit'});
             });
 
-            // Configuración para mejor visualización
-            const chartConfig = {
-                responsive: true, 
-                maintainAspectRatio: true,
-                interaction: {
-                    mode: 'index',
-                    intersect: false,
-                },
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top',
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                    }
-                },
-                scales: {
-                    x: {
-                        display: true,
-                        grid: {
-                            display: true,
-                            color: 'rgba(0, 0, 0, 0.05)'
-                        },
-                        ticks: {
-                            maxRotation: 45,
-                            minRotation: 45,
-                            autoSkip: true,
-                            maxTicksLimit: 15 // Limitar cantidad de labels
-                        }
-                    },
-                    y: {
-                        display: true,
-                        grid: {
-                            display: true,
-                            color: 'rgba(0, 0, 0, 0.05)'
-                        }
-                    }
-                }
-            };
-
+            // Update each chart
             charts.CO.data.labels = labels;
             charts.CO.data.datasets[0].data = data.map(d => d.MQ7 ? parseFloat(d.MQ7) * 0.005 : 0);
-            charts.CO.options = chartConfig;
             charts.CO.update();
 
             charts.CO2.data.labels = labels;
             charts.CO2.data.datasets[0].data = data.map(d => d.MQ135 ? parseFloat(d.MQ135) * 0.5 : 400);
-            charts.CO2.options = chartConfig;
             charts.CO2.update();
 
-            charts.PM.data.labels = labels;
-            charts.PM.data.datasets[0].data = data.map(d => parseFloat(d.PM2_5) || 0);
-            charts.PM.data.datasets[1].data = data.map(d => parseFloat(d.PM10) || 0);
-            charts.PM.options = chartConfig;
-            charts.PM.update();
+            charts.PM1.data.labels = labels;
+            charts.PM1.data.datasets[0].data = data.map(d => parseFloat(d.PM1_0) || 0);
+            charts.PM1.update();
+
+            charts.PM25.data.labels = labels;
+            charts.PM25.data.datasets[0].data = data.map(d => parseFloat(d.PM2_5) || 0);
+            charts.PM25.update();
+
+            charts.PM10.data.labels = labels;
+            charts.PM10.data.datasets[0].data = data.map(d => parseFloat(d.PM10) || 0);
+            charts.PM10.update();
 
             charts.Temp.data.labels = labels;
             charts.Temp.data.datasets[0].data = data.map(d => parseFloat(d.Temperature) || 0);
-            charts.Temp.options = chartConfig;
             charts.Temp.update();
 
             charts.Pressure.data.labels = labels;
             charts.Pressure.data.datasets[0].data = data.map(d => parseFloat(d.Pressure) || 0);
-            charts.Pressure.options = chartConfig;
             charts.Pressure.update();
+
+            // PMAll - combined
+            charts.PMAll.data.labels = labels;
+            charts.PMAll.data.datasets[0].data = data.map(d => parseFloat(d.PM1_0) || 0);
+            charts.PMAll.data.datasets[1].data = data.map(d => parseFloat(d.PM2_5) || 0);
+            charts.PMAll.data.datasets[2].data = data.map(d => parseFloat(d.PM10) || 0);
+            charts.PMAll.update();
         }
 
         function switchTab(tab) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
             document.getElementById(tab).classList.add('active');
-            event.target.classList.add('active');
+            if (event && event.target) event.target.closest('.tab').classList.add('active');
+        }
+
+        // REPORTE PDF
+        function generateReport() {
+            if (typeof jspdf === 'undefined') {
+                alert('Generando reporte...');
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+                script.onload = () => setTimeout(generateReportPDF, 500);
+                document.head.appendChild(script);
+            } else {
+                generateReportPDF();
+            }
+        }
+
+        function generateReportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Logo y header
+            doc.setFontSize(20);
+            doc.setFont('helvetica', 'bold');
+            doc.text('🛸 AirGuard 4.0', 105, 20, {align: 'center'});
+            
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            doc.text('REPORTE OFICIAL DE MONITOREO AMBIENTAL', 105, 30, {align: 'center'});
+            doc.text('Instituto Tecnológico de Nuevo León', 105, 37, {align: 'center'});
+            
+            doc.setFontSize(10);
+            doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-MX', {year: 'numeric', month: 'long', day: 'numeric'})}`, 105, 44, {align: 'center'});
+            doc.text(`Hora: ${new Date().toLocaleTimeString('es-MX')}`, 105, 50, {align: 'center'});
+            
+            // Línea divisoria
+            doc.setDrawColor(94, 94, 94);
+            doc.setLineWidth(0.5);
+            doc.line(20, 55, 190, 55);
+            
+            // Valores actuales
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('VALORES ACTUALES', 20, 65);
+            
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            let y = 75;
+            
+            const currentVals = [
+                ['CO (Monoxido)', document.getElementById('valCO').textContent + ' ppm', document.getElementById('statCO').textContent],
+                ['CO2 (Dioxido)', document.getElementById('valCO2').textContent + ' ppm', document.getElementById('statCO2').textContent],
+                ['PM1.0', document.getElementById('valPM1').textContent + ' ug/m3', document.getElementById('statPM1') ? document.getElementById('statPM1').textContent : 'N/A'],
+                ['PM2.5', document.getElementById('valPM25').textContent + ' ug/m3', document.getElementById('statPM25').textContent],
+                ['PM10', document.getElementById('valPM10').textContent + ' ug/m3', document.getElementById('statPM10').textContent],
+                ['Temperatura', document.getElementById('valTemp').textContent + ' C', 'Normal'],
+                ['Presion', document.getElementById('valPressure').textContent + ' Pa', 'Normal']
+            ];
+            
+            currentVals.forEach(([param, val, status]) => {
+                doc.text(param + ':', 25, y);
+                doc.setFont('helvetica', 'bold');
+                doc.text(val, 80, y);
+                doc.setFont('helvetica', 'normal');
+                doc.text(`[${status}]`, 130, y);
+                y += 7;
+            });
+            
+            // Estadísticas
+            y += 5;
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('ESTADISTICAS DEL PERIODO', 20, y);
+            
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            y += 10;
+            doc.text(`Total de registros: ${allData.length}`, 25, y);
+            y += 7;
+            doc.text(`Periodo de monitoreo: ${allData.length > 0 ? new Date(allData[allData.length-1].timestamp).toLocaleDateString('es-MX') : 'N/A'} - ${allData.length > 0 ? new Date(allData[0].timestamp).toLocaleDateString('es-MX') : 'N/A'}`, 25, y);
+            
+            // Footer
+            doc.setFontSize(8);
+            doc.setTextColor(100);
+            doc.text('Este documento es un reporte oficial generado por el sistema AirGuard 4.0', 105, 280, {align: 'center'});
+            doc.text('Instituto Tecnologico de Nuevo Leon - Sistema de Monitoreo Ambiental', 105, 285, {align: 'center'});
+            
+            // Guardar
+            doc.save(`Reporte_AirGuard_${new Date().toISOString().split('T')[0]}.pdf`);
+            alert('✅ Reporte PDF generado exitosamente');
         }
     </script>
 </body>
