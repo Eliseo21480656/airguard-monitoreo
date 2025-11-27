@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -62,17 +61,76 @@
         .dot.disconnected { background: var(--danger); }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         
-        /* Tabs */
-        .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; overflow-x: auto; 
-            padding-bottom: 0.5rem; }
-        .tabs::-webkit-scrollbar { height: 4px; }
-        .tabs::-webkit-scrollbar-thumb { background: var(--platinum); border-radius: 4px; }
-        .tab { padding: 0.875rem 1.5rem; background: white; border: 2px solid var(--border);
-            border-radius: 10px; cursor: pointer; white-space: nowrap; font-weight: 500; 
-            transition: all 0.3s; }
-        .tab.active { background: var(--platinum); color: white; border-color: var(--platinum); }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        /* Tabs - BOTTOM NAVIGATION (Android Style) */
+        .tabs { 
+            display: flex; 
+            justify-content: space-around;
+            align-items: center;
+            gap: 0;
+            padding: 0.5rem 0;
+            background: white;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 99;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.15);
+            border-top: 2px solid var(--platinum);
+        }
+        .tabs::-webkit-scrollbar { display: none; }
+        .tab { 
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.7rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateZ(0);
+            color: var(--text-light);
+            gap: 0.25rem;
+        }
+        .tab-icon {
+            font-size: 1.5rem;
+            transition: transform 0.3s;
+        }
+        .tab.active { 
+            color: var(--platinum);
+            font-weight: 700;
+        }
+        .tab.active .tab-icon {
+            transform: scale(1.2);
+        }
+        .tab:active {
+            transform: scale(0.95);
+        }
+        
+        /* Agregar padding-bottom al container para que no se tape con bottom nav */
+        .container {
+            padding-bottom: 80px;
+        }
+        .tab-content { 
+            display: none;
+            animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .tab-content.active { 
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(10px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
         
         /* Card */
         .card { background: white; border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem;
@@ -81,11 +139,45 @@
             color: var(--platinum); }
         
         /* Gauge Grid */
-        .gauge-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
-            gap: 1rem; }
-        .gauge-container { background: linear-gradient(145deg, #ffffff 0%, #f5f5f5 100%);
-            border: 3px solid var(--platinum); border-radius: 16px; padding: 1rem;
-            text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .gauge-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
+            gap: 1rem;
+            justify-items: center; /* Centrar en móviles */
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        .gauge-container { 
+            background: linear-gradient(145deg, #ffffff 0%, #f5f5f5 100%);
+            border: 3px solid var(--platinum); 
+            border-radius: 16px; 
+            padding: 1rem;
+            text-align: center; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 180px;
+        }
+        .gauge-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 0.5rem;
+            font-size: 0.65rem;
+            color: var(--platinum-light);
+            font-weight: 600;
+        }
+        .gauge-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .gauge-stat-label {
+            font-size: 0.6rem;
+            opacity: 0.7;
+        }
+        .gauge-stat-value {
+            font-weight: 700;
+            color: var(--platinum);
+        }
         .gauge-name { font-weight: 700; color: var(--platinum); margin-bottom: 0.5rem;
             font-size: 0.95rem; letter-spacing: 0.5px; }
         .gauge-canvas { margin: 0.5rem auto; }
@@ -142,14 +234,46 @@
             color: var(--platinum); }
         
         /* Chart */
-        .chart-wrapper { margin-bottom: 2rem; padding: 1rem; background: white;
-            border-radius: 12px; border: 2px solid var(--platinum); }
-        .chart-controls { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
-        .chart-btn { padding: 0.5rem 1rem; border: 2px solid var(--border); background: white;
-            border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
-        .chart-btn.active { background: var(--platinum); color: white; border-color: var(--platinum); }
-        .chart-title { font-weight: 700; color: var(--platinum); margin-bottom: 1rem; }
-        canvas { max-height: 300px; }
+        .chart-wrapper { 
+            margin-bottom: 1rem; 
+            padding: 1rem;
+        }
+        .chart-controls { 
+            display: flex; 
+            gap: 0.5rem; 
+            margin-bottom: 1rem; 
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .chart-btn { 
+            padding: 0.75rem 1.25rem; 
+            border: 2px solid var(--border); 
+            background: white;
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 0.85rem; 
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .chart-btn.active { 
+            background: var(--platinum); 
+            color: white; 
+            border-color: var(--platinum);
+            transform: scale(1.05);
+        }
+        .chart-btn:active {
+            transform: scale(0.95);
+        }
+        .chart-title { 
+            font-weight: 700; 
+            color: var(--platinum); 
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        canvas { 
+            max-height: 350px; 
+            width: 100% !important;
+        }
         
         /* Notification */
         .notification { position: fixed; top: 80px; right: 20px; background: white;
@@ -161,11 +285,35 @@
         .notif-title { font-weight: 700; margin-bottom: 0.5rem; }
         
         @media (max-width: 768px) {
-            .gauge-grid { grid-template-columns: repeat(2, 1fr); }
+            .gauge-grid { 
+                grid-template-columns: repeat(2, 1fr);
+                padding: 0 0.5rem;
+            }
+            .gauge-container {
+                max-width: 100%;
+            }
             .filter-buttons { grid-template-columns: repeat(2, 1fr); }
             .custom-range { grid-template-columns: 1fr; }
             .chart-controls { justify-content: center; }
             canvas { max-height: 200px; }
+            .tab {
+                font-size: 0.65rem;
+                padding: 0.4rem;
+            }
+            .tab-icon {
+                font-size: 1.3rem;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .gauge-grid {
+                grid-template-columns: 1fr;
+                max-width: 280px;
+                margin: 0 auto;
+            }
+            .tab {
+                font-size: 0.6rem;
+            }
         }
     </style>
 </head>
@@ -214,11 +362,26 @@
             </div>
 
             <div class="tabs">
-                <button class="tab active" onclick="switchTab('dashboard')">⚡ Dashboard</button>
-                <button class="tab" onclick="switchTab('adicional')">📋 Adicional</button>
-                <button class="tab" onclick="switchTab('historial')">📜 Historial</button>
-                <button class="tab" onclick="switchTab('graficas')">📈 Gráficas</button>
-                <button class="tab" onclick="switchTab('prediccion')">🔮 Predicción</button>
+                <button class="tab active" onclick="switchTab('dashboard')">
+                    <div class="tab-icon">⚡</div>
+                    <div>Dashboard</div>
+                </button>
+                <button class="tab" onclick="switchTab('adicional')">
+                    <div class="tab-icon">📋</div>
+                    <div>Adicional</div>
+                </button>
+                <button class="tab" onclick="switchTab('historial')">
+                    <div class="tab-icon">📜</div>
+                    <div>Historial</div>
+                </button>
+                <button class="tab" onclick="switchTab('graficas')">
+                    <div class="tab-icon">📈</div>
+                    <div>Gráficas</div>
+                </button>
+                <button class="tab" onclick="switchTab('prediccion')">
+                    <div class="tab-icon">🔮</div>
+                    <div>Predicción</div>
+                </button>
             </div>
 
             <!-- Dashboard -->
@@ -232,6 +395,16 @@
                             <div class="gauge-value" id="valCO">--</div>
                             <div class="gauge-unit">ppm</div>
                             <div class="badge good" id="statCO">Sin datos</div>
+                            <div class="gauge-stats">
+                                <div class="gauge-stat">
+                                    <div class="gauge-stat-label">Mín</div>
+                                    <div class="gauge-stat-value" id="minCO">--</div>
+                                </div>
+                                <div class="gauge-stat">
+                                    <div class="gauge-stat-label">Máx</div>
+                                    <div class="gauge-stat-value" id="maxCO">--</div>
+                                </div>
+                            </div>
                         </div>
                         <div class="gauge-container">
                             <div class="gauge-name">CO2</div>
@@ -239,6 +412,16 @@
                             <div class="gauge-value" id="valCO2">--</div>
                             <div class="gauge-unit">ppm</div>
                             <div class="badge good" id="statCO2">Sin datos</div>
+                            <div class="gauge-stats">
+                                <div class="gauge-stat">
+                                    <div class="gauge-stat-label">Mín</div>
+                                    <div class="gauge-stat-value" id="minCO2">--</div>
+                                </div>
+                                <div class="gauge-stat">
+                                    <div class="gauge-stat-label">Máx</div>
+                                    <div class="gauge-stat-value" id="maxCO2">--</div>
+                                </div>
+                            </div>
                         </div>
                         <div class="gauge-container">
                             <div class="gauge-name">PM2.5</div>
@@ -246,6 +429,16 @@
                             <div class="gauge-value" id="valPM25">--</div>
                             <div class="gauge-unit">µg/m³</div>
                             <div class="badge good" id="statPM25">Sin datos</div>
+                            <div class="gauge-stats">
+                                <div class="gauge-stat">
+                                    <div class="gauge-stat-label">Mín</div>
+                                    <div class="gauge-stat-value" id="minPM25">--</div>
+                                </div>
+                                <div class="gauge-stat">
+                                    <div class="gauge-stat-label">Máx</div>
+                                    <div class="gauge-stat-value" id="maxPM25">--</div>
+                                </div>
+                            </div>
                         </div>
                         <div class="gauge-container">
                             <div class="gauge-name">PM10</div>
@@ -253,6 +446,16 @@
                             <div class="gauge-value" id="valPM10">--</div>
                             <div class="gauge-unit">µg/m³</div>
                             <div class="badge good" id="statPM10">Sin datos</div>
+                            <div class="gauge-stats">
+                                <div class="gauge-stat">
+                                    <div class="gauge-stat-label">Mín</div>
+                                    <div class="gauge-stat-value" id="minPM10">--</div>
+                                </div>
+                                <div class="gauge-stat">
+                                    <div class="gauge-stat-label">Máx</div>
+                                    <div class="gauge-stat-value" id="maxPM10">--</div>
+                                </div>
+                            </div>
                         </div>
                         <div class="gauge-container">
                             <div class="gauge-name">TEMP</div>
@@ -260,6 +463,16 @@
                             <div class="gauge-value" id="valTemp">--</div>
                             <div class="gauge-unit">°C</div>
                             <div class="badge good">Normal</div>
+                            <div class="gauge-stats">
+                                <div class="gauge-stat">
+                                    <div class="gauge-stat-label">Mín</div>
+                                    <div class="gauge-stat-value" id="minTemp">--</div>
+                                </div>
+                                <div class="gauge-stat">
+                                    <div class="gauge-stat-label">Máx</div>
+                                    <div class="gauge-stat-value" id="maxTemp">--</div>
+                                </div>
+                            </div>
                         </div>
                         <div class="gauge-container">
                             <div class="gauge-name">PRESIÓN</div>
@@ -267,6 +480,16 @@
                             <div class="gauge-value" id="valPressure">--</div>
                             <div class="gauge-unit">Pa</div>
                             <div class="badge good">Normal</div>
+                            <div class="gauge-stats">
+                                <div class="gauge-stat">
+                                    <div class="gauge-stat-label">Mín</div>
+                                    <div class="gauge-stat-value" id="minPressure">--</div>
+                                </div>
+                                <div class="gauge-stat">
+                                    <div class="gauge-stat-label">Máx</div>
+                                    <div class="gauge-stat-value" id="maxPressure">--</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -349,36 +572,66 @@
 
             <!-- Gráficas -->
             <div id="graficas" class="tab-content">
+                <!-- Controles FUERA de las gráficas -->
+                <div class="card" style="margin-bottom: 1rem; background: linear-gradient(135deg, var(--platinum) 0%, var(--platinum-light) 100%);">
+                    <div style="color: white; font-weight: 700; margin-bottom: 1rem;">
+                        ⏱️ Rango de Tiempo
+                    </div>
+                    <div class="chart-controls">
+                        <button class="chart-btn active" onclick="setChartRange('last50')" style="background: white; color: var(--platinum);">
+                            Últimas 50
+                        </button>
+                        <button class="chart-btn" onclick="setChartRange('last100')" style="background: white; color: var(--platinum);">
+                            Últimas 100
+                        </button>
+                        <button class="chart-btn" onclick="setChartRange('hour')" style="background: white; color: var(--platinum);">
+                            Última Hora
+                        </button>
+                        <button class="chart-btn" onclick="setChartRange('day')" style="background: white; color: var(--platinum);">
+                            Hoy
+                        </button>
+                        <button class="chart-btn" onclick="setChartRange('week')" style="background: white; color: var(--platinum);">
+                            7 Días
+                        </button>
+                        <button class="chart-btn" onclick="setChartRange('all')" style="background: white; color: var(--platinum);">
+                            Todo
+                        </button>
+                    </div>
+                    <div style="color: white; font-size: 0.85rem; margin-top: 0.5rem; text-align: center;">
+                        📊 Mostrando <span id="chartDataCount">0</span> lecturas
+                    </div>
+                </div>
+
+                <!-- Gráficas individuales -->
                 <div class="card">
-                    <div class="card-header">📈 Gráficas Temporales</div>
-                    
                     <div class="chart-wrapper">
-                        <div class="chart-controls">
-                            <button class="chart-btn active" onclick="setChartRange('hour')">Última Hora</button>
-                            <button class="chart-btn" onclick="setChartRange('day')">Hoy</button>
-                            <button class="chart-btn" onclick="setChartRange('week')">7 Días</button>
-                            <button class="chart-btn" onclick="setChartRange('month')">30 Días</button>
-                            <button class="chart-btn" onclick="setChartRange('all')">Todo</button>
-                        </div>
                         <div class="chart-title">CO (Monóxido de Carbono)</div>
                         <canvas id="chartCO"></canvas>
                     </div>
-                    
+                </div>
+                
+                <div class="card">
                     <div class="chart-wrapper">
                         <div class="chart-title">CO2 (Dióxido de Carbono)</div>
                         <canvas id="chartCO2"></canvas>
                     </div>
-                    
+                </div>
+                
+                <div class="card">
                     <div class="chart-wrapper">
                         <div class="chart-title">PM2.5 y PM10 (Partículas)</div>
                         <canvas id="chartPM"></canvas>
                     </div>
-                    
+                </div>
+                
+                <div class="card">
                     <div class="chart-wrapper">
                         <div class="chart-title">Temperatura</div>
                         <canvas id="chartTemp"></canvas>
                     </div>
-                    
+                </div>
+                
+                <div class="card">
                     <div class="chart-wrapper">
                         <div class="chart-title">Presión Atmosférica</div>
                         <canvas id="chartPressure"></canvas>
@@ -452,7 +705,7 @@
         let filteredData = []; // Datos filtrados
         let charts = {};
         let gauges = {};
-        let chartRange = 'hour';
+        let chartRange = 'last50'; // DEFAULT: Mostrar últimas 50 para mejor visualización
 
         const THRESHOLDS = {
             CO: {good: 9, moderate: 35, critical: 50, max: 100},
@@ -580,10 +833,64 @@
             ctx.arc(cx, cy, radius - 22, 0, 2 * Math.PI);
             ctx.fillStyle = '#858585';
             ctx.fill();
+
+            // AGUJA/BUJÍA (Needle)
+            const needleLength = radius - 25;
+            const needleAngle = 0.75 * Math.PI + percent * 1.5 * Math.PI;
+            const needleX = cx + Math.cos(needleAngle) * needleLength;
+            const needleY = cy + Math.sin(needleAngle) * needleLength;
+
+            // Needle shadow
+            ctx.beginPath();
+            ctx.moveTo(cx + 2, cy + 2);
+            ctx.lineTo(needleX + 2, needleY + 2);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+            ctx.lineCap = 'round';
+            ctx.stroke();
+
+            // Needle
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(needleX, needleY);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineCap = 'round';
+            ctx.stroke();
+
+            // Needle center bolt
+            ctx.beginPath();
+            ctx.arc(cx, cy, 4, 0, 2 * Math.PI);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.strokeStyle = '#5e5e5e';
+            ctx.lineWidth = 2;
+            ctx.stroke();
         }
 
         function updateGauge(id, value) {
             drawGauge(id, value);
+            updateGaugeStats(id, value);
+        }
+
+        // Estadísticas por gauge
+        const gaugeStats = {
+            CO: {min: Infinity, max: -Infinity},
+            CO2: {min: Infinity, max: -Infinity},
+            PM25: {min: Infinity, max: -Infinity},
+            PM10: {min: Infinity, max: -Infinity},
+            Temp: {min: Infinity, max: -Infinity},
+            Pressure: {min: Infinity, max: -Infinity}
+        };
+
+        function updateGaugeStats(id, value) {
+            if (value < gaugeStats[id].min) gaugeStats[id].min = value;
+            if (value > gaugeStats[id].max) gaugeStats[id].max = value;
+
+            document.getElementById('min' + id).textContent = gaugeStats[id].min !== Infinity ? 
+                gaugeStats[id].min.toFixed(1) : '--';
+            document.getElementById('max' + id).textContent = gaugeStats[id].max !== -Infinity ? 
+                gaugeStats[id].max.toFixed(1) : '--';
         }
 
         // Firebase - CARGAR TODO
@@ -993,6 +1300,12 @@
             const now = new Date();
 
             switch(chartRange) {
+                case 'last50':
+                    data = filteredData.slice(0, 50);
+                    break;
+                case 'last100':
+                    data = filteredData.slice(0, 100);
+                    break;
                 case 'hour':
                     const hourAgo = now.getTime() - (60 * 60 * 1000);
                     data = filteredData.filter(d => d.timestamp >= hourAgo);
@@ -1005,43 +1318,93 @@
                     const weekAgo = now.getTime() - (7 * 24 * 60 * 60 * 1000);
                     data = filteredData.filter(d => d.timestamp >= weekAgo);
                     break;
-                case 'month':
-                    const monthAgo = now.getTime() - (30 * 24 * 60 * 60 * 1000);
-                    data = filteredData.filter(d => d.timestamp >= monthAgo);
-                    break;
                 case 'all':
                 default:
                     data = [...filteredData];
             }
 
             data = data.reverse(); // Oldest first for charts
+            
+            // Actualizar contador
+            document.getElementById('chartDataCount').textContent = data.length;
 
             const labels = data.map(d => {
                 const date = new Date(d.timestamp);
-                if (chartRange === 'hour') return date.toLocaleTimeString('es-MX', {hour: '2-digit', minute: '2-digit'});
-                if (chartRange === 'day') return date.toLocaleTimeString('es-MX', {hour: '2-digit', minute: '2-digit'});
+                if (chartRange === 'last50' || chartRange === 'last100' || chartRange === 'hour') {
+                    return date.toLocaleTimeString('es-MX', {hour: '2-digit', minute: '2-digit'});
+                }
+                if (chartRange === 'day') {
+                    return date.toLocaleTimeString('es-MX', {hour: '2-digit', minute: '2-digit'});
+                }
                 return date.toLocaleDateString('es-MX', {month: '2-digit', day: '2-digit', hour: '2-digit'});
             });
 
+            // Configuración para mejor visualización
+            const chartConfig = {
+                responsive: true, 
+                maintainAspectRatio: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                    }
+                },
+                scales: {
+                    x: {
+                        display: true,
+                        grid: {
+                            display: true,
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45,
+                            autoSkip: true,
+                            maxTicksLimit: 15 // Limitar cantidad de labels
+                        }
+                    },
+                    y: {
+                        display: true,
+                        grid: {
+                            display: true,
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    }
+                }
+            };
+
             charts.CO.data.labels = labels;
             charts.CO.data.datasets[0].data = data.map(d => d.MQ7 ? parseFloat(d.MQ7) * 0.005 : 0);
+            charts.CO.options = chartConfig;
             charts.CO.update();
 
             charts.CO2.data.labels = labels;
             charts.CO2.data.datasets[0].data = data.map(d => d.MQ135 ? parseFloat(d.MQ135) * 0.5 : 400);
+            charts.CO2.options = chartConfig;
             charts.CO2.update();
 
             charts.PM.data.labels = labels;
             charts.PM.data.datasets[0].data = data.map(d => parseFloat(d.PM2_5) || 0);
             charts.PM.data.datasets[1].data = data.map(d => parseFloat(d.PM10) || 0);
+            charts.PM.options = chartConfig;
             charts.PM.update();
 
             charts.Temp.data.labels = labels;
             charts.Temp.data.datasets[0].data = data.map(d => parseFloat(d.Temperature) || 0);
+            charts.Temp.options = chartConfig;
             charts.Temp.update();
 
             charts.Pressure.data.labels = labels;
             charts.Pressure.data.datasets[0].data = data.map(d => parseFloat(d.Pressure) || 0);
+            charts.Pressure.options = chartConfig;
             charts.Pressure.update();
         }
 
