@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -14,6 +15,7 @@
             --danger: #EF4444; --bg: #F8F9FA; --card: #FFF;
             --text: #1F2937; --text-light: #6B7280; --border: #E5E7EB;
             --platinum: #5e5e5e; --platinum-light: #858585;
+            --institutional: #8B1538; --institutional-dark: #6B0F2A;
         }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
@@ -24,8 +26,23 @@
         }
         
         /* Login */
-        .login-container { display: flex; align-items: center; justify-content: center; min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1rem; }
+       
+
+        .login-container {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(135deg, var(--institutional) 0%, var(--institutional-dark) 100%);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    z-index: 9999 !important;   /* ESTO ES LO IMPORTANTE */
+}
+.login-container.show {
+    display: flex !important;
+}
+
+
         .login-box { background: white; border-radius: 16px; padding: 2rem; width: 100%; max-width: 400px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
         .login-logo { text-align: center; font-size: 4rem; margin-bottom: 1rem; }
@@ -35,8 +52,13 @@
         .form-input { width: 100%; padding: 0.875rem; border: 2px solid var(--border);
             border-radius: 8px; font-size: 1rem; }
         .form-input:focus { outline: none; border-color: var(--primary); }
-        .btn-login { width: 100%; padding: 1rem; background: var(--primary); color: white;
+        .btn-login { width: 100%; padding: 1rem; background: var(--institutional); color: white;
             border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+        .btn-login:hover { background: var(--institutional-dark); }
+        .btn-secondary-login { width: 100%; padding: 0.75rem; background: white; color: var(--institutional);
+            border: 2px solid var(--institutional); border-radius: 8px; font-size: 0.9rem; font-weight: 600; 
+            cursor: pointer; margin-top: 1rem; }
+        .btn-secondary-login:hover { background: #f5f5f5; }
         .message { padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; display: none; }
         .message.show { display: block; }
         .message.error { background: #FEE2E2; color: #991B1B; }
@@ -54,7 +76,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--institutional) 0%, var(--institutional-dark) 100%);
             z-index: 10000;
             align-items: center;
             justify-content: center;
@@ -84,7 +106,7 @@
         }
         .offline-btn {
             background: white;
-            color: #667eea;
+            color: var(--institutional);
             border: none;
             padding: 1rem 2rem;
             border-radius: 8px;
@@ -93,12 +115,15 @@
             cursor: pointer;
         }
         
-        .header { background: linear-gradient(135deg, var(--platinum) 0%, var(--platinum-light) 100%);
+        .header { background: linear-gradient(135deg, var(--institutional) 0%, var(--institutional-dark) 100%);
             color: white; padding: 1rem; position: sticky; top: 0; z-index: 100;
             box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
         .header-content { display: flex; justify-content: space-between; align-items: center; 
             max-width: 1200px; margin: 0 auto; }
-        .app-title { font-size: 1.3rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+        .app-title { font-size: 1.3rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; 
+            flex-direction: column; align-items: flex-start; }
+        .app-name { font-size: 1.3rem; font-weight: 700; }
+        .app-institution { font-size: 0.7rem; font-weight: 400; opacity: 0.9; margin-top: -0.2rem; }
         .app-logo { font-size: 1.8rem; }
         .btn-header { background: rgba(255,255,255,0.2); border: none; color: white;
             padding: 0.6rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600;
@@ -208,7 +233,8 @@
             max-width: 180px;
         }
         .gauge-name { font-weight: 700; color: var(--platinum); margin-bottom: 0.5rem;
-            font-size: 0.95rem; letter-spacing: 0.5px; }
+            font-size: 0.7rem; letter-spacing: 0.3px; line-height: 1.1; text-align: center; 
+            min-height: 28px; display: flex; align-items: center; justify-content: center; }
         .gauge-canvas { margin: 0.5rem auto; image-rendering: -webkit-optimize-contrast; 
             image-rendering: crisp-edges; }
         .gauge-value { font-size: 1.5rem; font-weight: 700; color: var(--platinum);
@@ -397,6 +423,137 @@
             margin-top: 0.25rem;
         }
         
+        /* Info Section */
+        .info-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--institutional);
+        }
+        .info-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border);
+        }
+        .info-icon {
+            font-size: 2rem;
+            color: var(--institutional);
+        }
+        .info-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--institutional);
+        }
+        .info-abbr {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            font-weight: 600;
+        }
+        .info-section {
+            margin: 0.75rem 0;
+        }
+        .info-label {
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.25rem;
+            font-size: 0.9rem;
+        }
+        .info-content {
+            color: var(--text-light);
+            line-height: 1.6;
+            font-size: 0.9rem;
+        }
+        .info-ranges {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .info-range {
+            background: #F9FAFB;
+            padding: 0.75rem;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+        .info-range.good { border-left-color: var(--success); }
+        .info-range.moderate { border-left-color: var(--warning); }
+        .info-range.unhealthy { border-left-color: var(--danger); }
+        .info-range-label {
+            font-weight: 700;
+            font-size: 0.8rem;
+            margin-bottom: 0.25rem;
+        }
+        .info-range-value {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+        .info-colors {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .info-color {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+        }
+        .info-color-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+        .info-curious {
+            background: #FFF9E6;
+            border-left: 4px solid #F59E0B;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        .info-curious-title {
+            font-weight: 700;
+            color: #D97706;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .info-curious-text {
+            color: #78350F;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        
+        /* Period Banner */
+        .period-banner {
+            background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            border: 2px solid var(--institutional);
+        }
+        .period-title {
+            font-weight: 700;
+            color: var(--institutional);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        .period-content {
+            color: var(--text);
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        .period-duration {
+            font-weight: 700;
+            color: var(--institutional);
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
         @media (max-width: 768px) {
             .gauge-grid { 
                 grid-template-columns: repeat(2, 1fr);
@@ -430,9 +587,43 @@
                 font-size: 0.6rem;
             }
         }
+
+/* ====== SPLASH SCREEN NUEVO (agrega esto) ====== */
+.splash-screen {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000;
+    background: linear-gradient(135deg, var(--institutional) 0%, var(--institutional-dark) 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: opacity 0.8s ease-out;
+}
+.splash-screen.hide { opacity: 0; pointer-events: none; }
+.splash-logo {
+    width: 180px; height: 180px; background: white; border-radius: 20px; padding: 1rem;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3); display: flex; align-items: center;
+    justify-content: center; font-size: 5rem; animation: a1 1s ease-out;
+}
+.splash-title { font-size: 2rem; font-weight: 700; color: white; margin: 1rem 0; animation: a2 1s ease-out 0.3s both; }
+.splash-subtitle { font-size: 1.2rem; color: rgba(255,255,255,0.95); text-align: center; max-width: 90%; animation: a2 1s ease-out 0.6s both; }
+.splash-institution { font-size: 0.9rem; color: rgba(255,255,255,0.8); margin-top: 2rem; animation: a2 1s ease-out 0.9s both; }
+@keyframes a1 { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+@keyframes a2 { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+
+
+
+
     </style>
 </head>
 <body>
+
+<!-- ====== SPLASH NUEVO (agrega esto) ====== -->
+<div id="splash" class="splash-screen">
+    <div class="splash-logo">Radar</div>
+    <div class="splash-title">AirGuard</div>
+    <div class="splash-subtitle">Respira tranquilo: conoce la calidad del aire en tiempo real</div>
+    <div class="splash-institution">Instituto Tecnológico de Nuevo León</div>
+</div>
+
+
     <!-- Offline Message -->
     <div id="offlineScreen" class="offline-screen">
         <div class="offline-icon">📡</div>
@@ -445,26 +636,55 @@
     </div>
 
     <!-- Login -->
-    <div id="loginContainer" class="login-container">
-        <div class="login-box">
-            <div class="login-logo">📡</div>
-            <div class="login-title">AirGuard</div>
-            <div class="login-subtitle">Sistema de Monitoreo Ambiental - ITNL</div>
-            <div id="loginError" class="message error"></div>
-            <div id="loginSuccess" class="message success"></div>
-            <form id="loginForm">
-                <div class="form-group">
-                    <input type="email" id="email" class="form-input" placeholder="Email" 
-                           value="admin@monitoreo.com" required>
-                </div>
-                <div class="form-group">
-                    <input type="password" id="password" class="form-input" placeholder="Contraseña" 
-                           value="Monitoreo#2025" required>
-                </div>
-                <button type="submit" class="btn-login">Iniciar Sesión</button>
-            </form>
-        </div>
+    
+    <!-- Login -->
+<div id="loginContainer" class="login-container" style="display: none;">
+    <div class="login-box">
+        <div class="login-logo">Radar</div>
+        <div class="login-title">AirGuard</div>
+        <div class="login-subtitle">Sistema de Monitoreo Ambiental - ITNL</div>
+        <div id="loginError" class="message error"></div>
+        <div id="loginSuccess" class="message success"></div>
+        <form id="loginForm">
+            <div class="form-group">
+                <input type="email" id="email" class="form-input" placeholder="Email"
+                       value="admin@monitoreo.com" required>
+            </div>
+            <div class="form-group">
+                <input type="password" id="password" class="form-input" placeholder="Contraseña"
+                       value="Monitoreo#2025" required>
+            </div>
+            <button type="submit" class="btn-login">Iniciar Sesión</button>
+            <button type="button" class="btn-secondary-login" onclick="toggleRegisterForm()">
+                ➕ Crear Nueva Cuenta
+            </button>
+        </form>
+       
+        <!-- Formulario de Registro -->
+        <form id="registerForm" style="display: none;">
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <h3 style="color: var(--institutional);">Crear Nueva Cuenta</h3>
+            </div>
+            <div class="form-group">
+                <input type="email" id="registerEmail" class="form-input" placeholder="Email" required>
+            </div>
+            <div class="form-group">
+                <input type="password" id="registerPassword" class="form-input"
+                           placeholder="Contraseña (mínimo 6 caracteres)" required minlength="6">
+            </div>
+            <div class="form-group">
+                <input type="password" id="registerPasswordConfirm" class="form-input"
+                           placeholder="Confirmar Contraseña" required>
+            </div>
+            <button type="submit" class="btn-login">Registrar Cuenta</button>
+            <button type="button" class="btn-secondary-login" onclick="toggleRegisterForm()">
+                ← Volver a Iniciar Sesión
+            </button>
+        </form>
     </div>
+</div>
+
+
 
     <!-- App -->
     <div id="appContainer" class="app-container">
@@ -476,8 +696,13 @@
         <div class="header">
             <div class="header-content">
                 <div class="app-title">
-                    <span class="app-logo">📡</span>
-                    <span>AirGuard</span>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="app-logo">📡</span>
+                        <div>
+                            <div class="app-name">AirGuard</div>
+                            <div class="app-institution">Instituto Tecnológico de Nuevo León</div>
+                        </div>
+                    </div>
                 </div>
                 <div class="header-buttons">
                     <button class="btn-header" onclick="refreshData()">🔄</button>
@@ -490,7 +715,22 @@
         <div class="container">
             <div id="banner" class="banner disconnected">
                 <div class="dot disconnected"></div>
-                <span id="bannerText">Conectando...</span>
+                <div style="flex: 1;">
+                    <span id="bannerText">Conectando...</span>
+                    <div id="connectionTime" style="font-size: 0.85rem; margin-top: 0.25rem; opacity: 0.9; display: none;">
+                        Tiempo conectado: <span id="timeCounter">00:00:00</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Período de Registros -->
+            <div id="periodBanner" class="period-banner" style="display: none;">
+                <div class="period-title">📊 Período de Registros</div>
+                <div class="period-content">
+                    <div><strong>Desde:</strong> <span id="firstRecordDate">--</span></div>
+                    <div><strong>Hasta:</strong> <span id="lastRecordDate">--</span></div>
+                </div>
+                <div class="period-duration" id="recordDuration">--</div>
             </div>
 
             <!-- Dashboard -->
@@ -610,6 +850,358 @@
                 </div>
             </div>
 
+            <!-- Información -->
+            <div id="informacion" class="tab-content">
+                <div class="card">
+                    <div class="card-header">ℹ️ Guía de Variables de Calidad del Aire</div>
+                    
+                    <!-- CO -->
+                    <div class="info-card">
+                        <div class="info-header">
+                            <div class="info-icon">💨</div>
+                            <div>
+                                <div class="info-title">Monóxido de Carbono</div>
+                                <div class="info-abbr">CO | ppm (partes por millón)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-label">¿Qué es?</div>
+                            <div class="info-content">Gas incoloro, inodoro y venenoso que se produce por la combustión incompleta de combustibles fósiles. Es altamente tóxico porque reduce la capacidad de la sangre para transportar oxígeno.</div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-label">¿Cómo se mide?</div>
+                            <div class="info-content">Se mide con el sensor MQ-7 que detecta concentraciones de CO en el aire mediante cambios en la resistencia eléctrica del material sensor.</div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-label">Rangos de Medición</div>
+                            <div class="info-ranges">
+                                <div class="info-range good">
+                                    <div class="info-range-label">🟢 Bueno</div>
+                                    <div class="info-range-value">0 - 9 ppm</div>
+                                </div>
+                                <div class="info-range moderate">
+                                    <div class="info-range-label">🟡 Moderado</div>
+                                    <div class="info-range-value">9 - 35 ppm</div>
+                                </div>
+                                <div class="info-range unhealthy">
+                                    <div class="info-range-label">🔴 Insalubre</div>
+                                    <div class="info-range-value">> 35 ppm</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-label">Interpretación de Colores</div>
+                            <div class="info-colors">
+                                <div class="info-color">
+                                    <div class="info-color-dot" style="background: #10B981;"></div>
+                                    <span><strong>Verde:</strong> Aire limpio y seguro</span>
+                                </div>
+                                <div class="info-color">
+                                    <div class="info-color-dot" style="background: #F59E0B;"></div>
+                                    <span><strong>Amarillo:</strong> Precaución, grupos sensibles pueden verse afectados</span>
+                                </div>
+                                <div class="info-color">
+                                    <div class="info-color-dot" style="background: #EF4444;"></div>
+                                    <span><strong>Rojo:</strong> Peligroso, evacuar área y ventilar</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-curious">
+                            <div class="info-curious-title">💡 Dato Curioso</div>
+                            <div class="info-curious-text">El CO se conoce como "el asesino silencioso" porque no tiene olor, color ni sabor. Una exposición prolongada a niveles de 70 ppm puede causar dolor de cabeza, y niveles superiores a 400 ppm son potencialmente fatales en pocas horas.</div>
+                        </div>
+                    </div>
+                    
+                    <!-- CO2 -->
+                    <div class="info-card">
+                        <div class="info-header">
+                            <div class="info-icon">🌫️</div>
+                            <div>
+                                <div class="info-title">Dióxido de Carbono</div>
+                                <div class="info-abbr">CO2 | ppm (partes por millón)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-label">¿Qué es?</div>
+                            <div class="info-content">Gas incoloro presente naturalmente en la atmósfera. Es un producto de la respiración y la combustión. A altas concentraciones puede causar somnolencia, dolor de cabeza y reducción de la concentración.</div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-label">¿Cómo se mide?</div>
+                            <div class="info-content">Se mide con el sensor MQ-135 que detecta diversos gases incluyendo CO2, amoniaco y otros compuestos en el aire mediante tecnología de semiconductor.</div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-label">Rangos de Medición</div>
+                            <div class="info-ranges">
+                                <div class="info-range good">
+                                    <div class="info-range-label">🟢 Bueno</div>
+                                    <div class="info-range-value">< 1000 ppm</div>
+                                </div>
+                                <div class="info-range moderate">
+                                    <div class="info-range-label">🟡 Moderado</div>
+                                    <div class="info-range-value">1000 - 2000 ppm</div>
+                                </div>
+                                <div class="info-range unhealthy">
+                                    <div class="info-range-label">🔴 Insalubre</div>
+                                    <div class="info-range-value">> 2000 ppm</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-label">Interpretación de Colores</div>
+                            <div class="info-colors">
+                                <div class="info-color">
+                                    <div class="info-color-dot" style="background: #10B981;"></div>
+                                    <span><strong>Verde:</strong> Ventilación adecuada</span>
+                                </div>
+                                <div class="info-color">
+                                    <div class="info-color-dot" style="background: #F59E0B;"></div>
+                                    <span><strong>Amarillo:</strong> Ambiente cerrado, considerar ventilar</span>
+                                </div>
+                                <div class="info-color">
+                                    <div class="info-color-dot" style="background: #EF4444;"></div>
+                                    <span><strong>Rojo:</strong> Ventilación insuficiente, abrir ventanas</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-curious">
+                            <div class="info-curious-title">💡 Dato Curioso</div>
+                            <div class="info-curious-text">Niveles de CO2 superiores a 1000 ppm en interiores reducen el rendimiento cognitivo hasta en un 15%. Las aulas mal ventiladas pueden alcanzar 3000 ppm, afectando el aprendizaje de los estudiantes.</div>
+                        </div>
+                    </div>
+                    
+                    <!-- PM1.0 -->
+                    <div class="info-card">
+                        <div class="info-header">
+                            <div class="info-icon">🔬</div>
+                            <div>
+                                <div class="info-title">Partículas Ultrafinas</div>
+                                <div class="info-abbr">PM1.0 | µg/m³ (microgramos por metro cúbico)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-label">¿Qué son?</div>
+                            <div class="info-content">Partículas extremadamente pequeñas (menos de 1 micrómetro) suspendidas en el aire. Incluyen humo de combustión, virus, bacterias y partículas ultrafinas de combustibles. Son las más peligrosas porque penetran profundamente en los pulmones y el torrente sanguíneo.</div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-label">¿Cómo se miden?</div>
+                            <div class="info-content">Se miden con un sensor láser de dispersión de luz que cuenta y clasifica partículas según su tamaño mediante un rayo láser y un detector fotoeléctrico.</div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-label">Rangos de Medición</div>
+                            <div class="info-ranges">
+                                <div class="info-range good">
+                                    <div class="info-range-label">🟢 Bueno</div>
+                                    <div class="info-range-value">0 - 10 µg/m³</div>
+                                </div>
+                                <div class="info-range moderate">
+                                    <div class="info-range-label">🟡 Moderado</div>
+                                    <div class="info-range-value">10 - 25 µg/m³</div>
+                                </div>
+                                <div class="info-range unhealthy">
+                                    <div class="info-range-label">🔴 Insalubre</div>
+                                    <div class="info-range-value">> 25 µg/m³</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-curious">
+                            <div class="info-curious-title">💡 Dato Curioso</div>
+                            <div class="info-curious-text">Las PM1.0 son tan pequeñas que 70,000 de ellas puestas en fila medirían solo 7 centímetros. Pueden atravesar las membranas pulmonares y entrar directamente al torrente sanguíneo, afectando órganos vitales.</div>
+                        </div>
+                    </div>
+                    
+                    <!-- PM2.5 -->
+                    <div class="info-card">
+                        <div class="info-header">
+                            <div class="info-icon">🌫️</div>
+                            <div>
+                                <div class="info-title">Partículas Finas</div>
+                                <div class="info-abbr">PM2.5 | µg/m³ (microgramos por metro cúbico)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-label">¿Qué son?</div>
+                            <div class="info-content">Partículas finas menores a 2.5 micrómetros. Incluyen polvo fino, hollín, humo y aerosoles. Son 30 veces más pequeñas que un cabello humano. Provienen de la combustión de vehículos, industrias y procesos naturales.</div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-label">¿Cómo se miden?</div>
+                            <div class="info-content">Mediante sensor láser de dispersión de luz que diferencia partículas según su tamaño. Es el estándar internacional para monitoreo de calidad del aire.</div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-label">Rangos de Medición (WHO 2021)</div>
+                            <div class="info-ranges">
+                                <div class="info-range good">
+                                    <div class="info-range-label">🟢 Bueno</div>
+                                    <div class="info-range-value">0 - 12 µg/m³</div>
+                                </div>
+                                <div class="info-range moderate">
+                                    <div class="info-range-label">🟡 Moderado</div>
+                                    <div class="info-range-value">12 - 35 µg/m³</div>
+                                </div>
+                                <div class="info-range unhealthy">
+                                    <div class="info-range-label">🔴 Insalubre</div>
+                                    <div class="info-range-value">> 35 µg/m³</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-curious">
+                            <div class="info-curious-title">💡 Dato Curioso</div>
+                            <div class="info-curious-text">La OMS estima que PM2.5 causa 7 millones de muertes prematuras al año en el mundo. Una reducción de solo 10 µg/m³ en PM2.5 puede aumentar la esperanza de vida promedio en 0.6 años.</div>
+                        </div>
+                    </div>
+                    
+                    <!-- PM10 -->
+                    <div class="info-card">
+                        <div class="info-header">
+                            <div class="info-icon">🌪️</div>
+                            <div>
+                                <div class="info-title">Partículas Gruesas</div>
+                                <div class="info-abbr">PM10 | µg/m³ (microgramos por metro cúbico)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-label">¿Qué son?</div>
+                            <div class="info-content">Partículas inhalables menores a 10 micrómetros. Incluyen polvo, polen, moho y fragmentos de suelo. Provienen de construcciones, caminos sin pavimentar, agricultura y erosión. Quedan atrapadas en la nariz y garganta.</div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-label">¿Cómo se miden?</div>
+                            <div class="info-content">Mediante el mismo sensor láser que PM2.5 y PM1.0, pero clasificando partículas de mayor tamaño (hasta 10 micrómetros).</div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-label">Rangos de Medición</div>
+                            <div class="info-ranges">
+                                <div class="info-range good">
+                                    <div class="info-range-label">🟢 Bueno</div>
+                                    <div class="info-range-value">0 - 54 µg/m³</div>
+                                </div>
+                                <div class="info-range moderate">
+                                    <div class="info-range-label">🟡 Moderado</div>
+                                    <div class="info-range-value">54 - 154 µg/m³</div>
+                                </div>
+                                <div class="info-range unhealthy">
+                                    <div class="info-range-label">🔴 Insalubre</div>
+                                    <div class="info-range-value">> 154 µg/m³</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-curious">
+                            <div class="info-curious-title">💡 Dato Curioso</div>
+                            <div class="info-curious-text">Durante tormentas de arena del Sahara, las PM10 pueden viajar miles de kilómetros. Estas partículas han sido detectadas en el Caribe y América, cruzando el océano Atlántico en solo 5-7 días.</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Temperatura -->
+                    <div class="info-card">
+                        <div class="info-header">
+                            <div class="info-icon">🌡️</div>
+                            <div>
+                                <div class="info-title">Temperatura</div>
+                                <div class="info-abbr">TEMP | °C (grados Celsius)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-label">¿Qué es?</div>
+                            <div class="info-content">Medida del calor o frío del aire ambiente. La temperatura afecta la dispersión de contaminantes y el confort humano. Temperaturas extremas pueden agravar problemas respiratorios y cardiovasculares.</div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-label">¿Cómo se mide?</div>
+                            <div class="info-content">Mediante sensor digital de temperatura (termistor o semiconductor) que mide cambios en la resistencia eléctrica proporcionales a la temperatura ambiente.</div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-label">Rangos de Confort</div>
+                            <div class="info-ranges">
+                                <div class="info-range good">
+                                    <div class="info-range-label">🟢 Confortable</div>
+                                    <div class="info-range-value">18 - 25 °C</div>
+                                </div>
+                                <div class="info-range moderate">
+                                    <div class="info-range-label">🟡 Moderado</div>
+                                    <div class="info-range-value">25 - 30 °C</div>
+                                </div>
+                                <div class="info-range unhealthy">
+                                    <div class="info-range-label">🔴 Extremo</div>
+                                    <div class="info-range-value">> 30 °C o < 18 °C</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-curious">
+                            <div class="info-curious-title">💡 Dato Curioso</div>
+                            <div class="info-curious-text">La temperatura ideal para el rendimiento cognitivo es de 21-22°C. Por cada grado por encima de 25°C, la productividad laboral disminuye aproximadamente 2%. El calor excesivo también aumenta la concentración de ozono troposférico, un contaminante peligroso.</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Presión Atmosférica -->
+                    <div class="info-card">
+                        <div class="info-header">
+                            <div class="info-icon">🌊</div>
+                            <div>
+                                <div class="info-title">Presión Atmosférica</div>
+                                <div class="info-abbr">PRESIÓN | Pa (Pascales) o hPa (hectopascales)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-label">¿Qué es?</div>
+                            <div class="info-content">Fuerza que ejerce el peso de la atmósfera sobre la superficie terrestre. Afecta el clima, la dispersión de contaminantes y puede influir en la salud humana. Cambios bruscos pueden causar dolores de cabeza en personas sensibles.</div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-label">¿Cómo se mide?</div>
+                            <div class="info-content">Mediante un sensor barométrico digital (como el BMP280) que mide la presión del aire usando un elemento sensible a la presión. También calcula la altitud basándose en la presión medida.</div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-label">Rangos Típicos (a nivel del mar)</div>
+                            <div class="info-ranges">
+                                <div class="info-range good">
+                                    <div class="info-range-label">🟢 Normal</div>
+                                    <div class="info-range-value">980 - 1020 hPa</div>
+                                </div>
+                                <div class="info-range moderate">
+                                    <div class="info-range-label">🟡 Alta/Baja</div>
+                                    <div class="info-range-value">1020-1040 / 960-980 hPa</div>
+                                </div>
+                                <div class="info-range unhealthy">
+                                    <div class="info-range-label">🔴 Extrema</div>
+                                    <div class="info-range-value">> 1040 o < 960 hPa</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-curious">
+                            <div class="info-curious-title">💡 Dato Curioso</div>
+                            <div class="info-curious-text">La presión atmosférica disminuye aproximadamente 12 hPa por cada 100 metros de altitud. En Ciudad de México (2240m), la presión es ~770 hPa, mientras que a nivel del mar es ~1013 hPa. Presiones altas (anticiclones) suelen asociarse con buen tiempo, mientras que presiones bajas (borrascas) traen lluvia y tormentas.</div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+
             <div style="text-align: center; color: var(--text-light); font-size: 0.85rem; margin-top: 1rem;">
                 🕐 Última actualización: <span id="lastUpdate">--</span>
             </div>
@@ -632,6 +1224,10 @@
             <button class="tab" onclick="switchTab('prediccion')">
                 <div class="tab-icon">📐</div>
                 <div>Análisis</div>
+            </button>
+            <button class="tab" onclick="switchTab('informacion')">
+                <div class="tab-icon">ℹ️</div>
+                <div>Info</div>
             </button>
         </div>
 
@@ -684,16 +1280,18 @@
         let charts = {};
         let gauges = {};
         let chartRange = 'last50';
+        let connectionStartTime = null;
+        let connectionTimer = null;
 
         // 7 variables principales del dashboard
         const DASHBOARD_VARS = [
-            {id: 'CO', name: 'CO', unit: 'ppm', max: 100},
-            {id: 'CO2', name: 'CO2', unit: 'ppm', max: 5000},
-            {id: 'PM1', name: 'PM1.0', unit: 'µg/m³', max: 100},
-            {id: 'PM25', name: 'PM2.5', unit: 'µg/m³', max: 150},
-            {id: 'PM10', name: 'PM10', unit: 'µg/m³', max: 350},
-            {id: 'Temp', name: 'TEMP', unit: '°C', max: 50},
-            {id: 'Pressure', name: 'PRESIÓN', unit: 'Pa', max: 1050}
+            {id: 'CO', name: 'Monóxido de Carbono', unit: 'ppm', max: 100},
+            {id: 'CO2', name: 'Dióxido de Carbono', unit: 'ppm', max: 5000},
+            {id: 'PM1', name: 'Partículas Ultrafinas', unit: 'µg/m³', max: 100},
+            {id: 'PM25', name: 'Partículas Finas', unit: 'µg/m³', max: 150},
+            {id: 'PM10', name: 'Partículas Gruesas', unit: 'µg/m³', max: 350},
+            {id: 'Temp', name: 'Temperatura', unit: '°C', max: 50},
+            {id: 'Pressure', name: 'Presión Atmosférica', unit: 'Pa', max: 1050}
         ];
 
         const THRESHOLDS = {
@@ -738,9 +1336,15 @@
                 document.getElementById('loginSuccess').classList.add('show');
 
                 setTimeout(() => {
-                    document.getElementById('loginContainer').style.display = 'none';
-                    document.getElementById('appContainer').classList.add('active');
-                    initApp();
+                    
+                    // Quitar el fondo granate para siempre
+document.getElementById('loginContainer').style.display = 'none';
+document.getElementById('loginContainer').style.visibility = 'hidden';
+document.getElementById('loginContainer').style.zIndex = '-1';
+
+
+document.getElementById('appContainer').classList.add('active');
+initApp();
                 }, 1000);
             } catch (error) {
                 document.getElementById('loginError').textContent = error.message;
@@ -750,10 +1354,73 @@
             }
         });
 
+        // Manejador de formulario de registro
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+            const btn = e.target.querySelector('.btn-login');
+
+            // Validar contraseñas
+            if (password !== passwordConfirm) {
+                document.getElementById('loginError').textContent = 'Las contraseñas no coinciden';
+                document.getElementById('loginError').classList.add('show');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Creando cuenta...';
+
+            try {
+                const cred = await auth.createUserWithEmailAndPassword(email, password);
+                console.log('✅ Cuenta creada:', cred.user.email);
+
+                document.getElementById('loginSuccess').textContent = '¡Cuenta creada! Iniciando sesión...';
+                document.getElementById('loginSuccess').classList.add('show');
+                document.getElementById('loginError').classList.remove('show');
+
+                setTimeout(() => {
+                    currentUser = cred.user;
+                    document.getElementById('loginContainer').style.display = 'none';
+                    document.getElementById('appContainer').classList.add('active');
+                    initApp();
+                }, 1500);
+            } catch (error) {
+                let errorMsg = 'Error al crear cuenta';
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMsg = 'Este email ya está registrado';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMsg = 'Email inválido';
+                } else if (error.code === 'auth/weak-password') {
+                    errorMsg = 'La contraseña debe tener al menos 6 caracteres';
+                }
+                
+                document.getElementById('loginError').textContent = errorMsg;
+                document.getElementById('loginError').classList.add('show');
+                btn.disabled = false;
+                btn.textContent = 'Registrar Cuenta';
+            }
+        });
+
         function logout() {
             auth.signOut();
             document.getElementById('appContainer').classList.remove('active');
-            document.getElementById('loginContainer').style.display = 'flex';
+            
+            // Quitar splash y mostrar login correctamente
+document.getElementById('splash').classList.add('hide');
+setTimeout(() => {
+    document.getElementById('splash').remove();
+    const login = document.getElementById('loginContainer');
+    login.classList.add('show');   // Usa la clase .show
+    login.style.zIndex = '10000';  // Por encima de todo
+}, 900);
+            
+            // Limpiar formularios
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
         }
 
         function initApp() {
@@ -959,6 +1626,7 @@
                     document.getElementById('totalCount').textContent = allData.length;
                     
                     filterTime('all');
+                    updatePeriodBanner();
                 }
             });
         }
@@ -1077,6 +1745,90 @@
             banner.className = `banner ${status}`;
             banner.querySelector('.dot').className = `dot ${status}`;
             document.getElementById('bannerText').textContent = text;
+            
+            // Iniciar contador de tiempo conectado
+            if (status === 'connected') {
+                if (!connectionStartTime) {
+                    connectionStartTime = Date.now();
+                    startConnectionTimer();
+                }
+                document.getElementById('connectionTime').style.display = 'block';
+            } else {
+                document.getElementById('connectionTime').style.display = 'none';
+            }
+        }
+
+        function startConnectionTimer() {
+            if (connectionTimer) clearInterval(connectionTimer);
+            
+            connectionTimer = setInterval(() => {
+                if (!connectionStartTime) return;
+                
+                const elapsed = Date.now() - connectionStartTime;
+                const hours = Math.floor(elapsed / 3600000);
+                const minutes = Math.floor((elapsed % 3600000) / 60000);
+                const seconds = Math.floor((elapsed % 60000) / 1000);
+                
+                const timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                document.getElementById('timeCounter').textContent = timeStr;
+            }, 1000);
+        }
+
+        function updatePeriodBanner() {
+            if (allData.length === 0) {
+                document.getElementById('periodBanner').style.display = 'none';
+                return;
+            }
+            
+            // Ordenar por timestamp
+            const sorted = [...allData].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            const firstRecord = new Date(sorted[0].timestamp);
+            const lastRecord = new Date(sorted[sorted.length - 1].timestamp);
+            
+            // Formatear fechas
+            const formatDate = (date) => {
+                return date.toLocaleString('es-MX', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            };
+            
+            document.getElementById('firstRecordDate').textContent = formatDate(firstRecord);
+            document.getElementById('lastRecordDate').textContent = formatDate(lastRecord);
+            
+            // Calcular duración
+            const diffMs = lastRecord - firstRecord;
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            
+            let durationStr = '';
+            if (diffDays > 0) durationStr += `${diffDays} día${diffDays > 1 ? 's' : ''}`;
+            if (diffHours > 0) durationStr += ` ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
+            if (diffDays === 0 && diffHours === 0 && diffMinutes > 0) durationStr += `${diffMinutes} minuto${diffMinutes > 1 ? 's' : ''}`;
+            
+            document.getElementById('recordDuration').textContent = `Duración total: ${durationStr || 'Menos de 1 minuto'}`;
+            document.getElementById('periodBanner').style.display = 'block';
+        }
+
+        function toggleRegisterForm() {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            
+            if (loginForm.style.display === 'none') {
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+                document.getElementById('loginError').textContent = '';
+                document.getElementById('loginError').classList.remove('show');
+            } else {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+                document.getElementById('loginError').textContent = '';
+                document.getElementById('loginError').classList.remove('show');
+            }
         }
 
         function refreshData() {
@@ -1478,7 +2230,11 @@
                 if (password) alert('❌ Incorrecta'); 
                 closeDeleteMenu(); return; 
             }
-            if (!confirm('⚠️ ¿Borrar TODO?')) { closeDeleteMenu(); return; }
+            
+            // Advertencia sobre reinicio de tiempo
+            alert('⚠️ ATENCIÓN: Al borrar TODOS los registros se reiniciará el tiempo conectado.');
+            
+            if (!confirm('⚠️ ¿Borrar TODO y reiniciar tiempo conectado?')) { closeDeleteMenu(); return; }
             
             const confirmText = prompt('Escribe: BORRAR TODO');
             if (confirmText !== 'BORRAR TODO') { 
@@ -1490,8 +2246,15 @@
                 const deviceId = '0a10aced202194944a053768';
                 await db.ref(`dispositivos/${deviceId}/lecturas`).remove();
                 allData = []; filteredData = [];
-                updateHistoryTable(); updateCharts();
-                alert('✅ Todo borrado. Backup guardado.');
+                
+                // Reiniciar tiempo conectado
+                connectionStartTime = Date.now();
+                
+                updateHistoryTable(); 
+                updateCharts();
+                updatePeriodBanner();
+                
+                showNotification('✅ Todo borrado. Backup guardado. Tiempo conectado reiniciado.');
                 closeDeleteMenu();
             } catch (error) {
                 alert('❌ Error: ' + error.message);
@@ -1810,6 +2573,18 @@
                 alert('❌ Error al generar reporte: ' + error.message);
             }
         }
+
+
+
+        
+// ====== QUITAR SPLASH Y MOSTRAR LOGIN DESPUÉS DE 2.8 SEGUNDOS ======
+setTimeout(() => {
+    document.getElementById('splash').classList.add('hide');
+    setTimeout(() => {
+        document.getElementById('splash').remove();
+       document.getElementById('loginContainer').style.display = 'flex';
+    }, 900);
+}, 2800);
+
     </script>
 </body>
-</html>
