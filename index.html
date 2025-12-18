@@ -617,7 +617,7 @@
 
 <!-- ====== SPLASH NUEVO (agrega esto) ====== -->
 <div id="splash" class="splash-screen">
-    <div class="splash-logo">Radar</div>
+    <div class="splash-logo">ITNL</div>
     <div class="splash-title">AirGuard</div>
     <div class="splash-subtitle">Respira tranquilo: conoce la calidad del aire en tiempo real</div>
     <div class="splash-institution">Instituto Tecnológico de Nuevo León</div>
@@ -640,7 +640,7 @@
     <!-- Login -->
 <div id="loginContainer" class="login-container" style="display: none;">
     <div class="login-box">
-        <div class="login-logo">Radar</div>
+        <div class="login-logo">ITNL</div>
         <div class="login-title">AirGuard</div>
         <div class="login-subtitle">Sistema de Monitoreo Ambiental - ITNL</div>
         <div id="loginError" class="message error"></div>
@@ -648,11 +648,11 @@
         <form id="loginForm">
             <div class="form-group">
                 <input type="email" id="email" class="form-input" placeholder="Email"
-                       value="admin@monitoreo.com" required>
+                       value="" required>  <!-- CORREO POR DEFECTO -->
             </div>
             <div class="form-group">
                 <input type="password" id="password" class="form-input" placeholder="Contraseña"
-                       value="Monitoreo#2025" required>
+                       value="" required> <!-- CONTRASEÑA POR DEFECTO CAMBIARR SI ES NECESARIO XD -->
             </div>
             <button type="submit" class="btn-login">Iniciar Sesión</button>
             <button type="button" class="btn-secondary-login" onclick="toggleRegisterForm()">
@@ -1322,10 +1322,26 @@
             e.preventDefault();
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const btn = e.target.querySelector('.btn-login');
+ 
 
-            btn.disabled = true;
-            btn.textContent = 'Iniciando...';
+
+            const btn = e.target.querySelector('.btn-login');
+btn.disabled = true;
+btn.textContent = 'Iniciando...';
+
+try {
+    const cred = await auth.signInWithEmailAndPassword(email, password);
+    // ... resto del código de éxito
+} catch (error) {
+    // ... mostrar error
+} finally {
+    // === SIEMPRE se ejecuta: restablece el botón ===
+    btn.disabled = false;
+    btn.textContent = 'Iniciar Sesión';
+}
+
+
+
 
             try {
                 const cred = await auth.signInWithEmailAndPassword(email, password);
@@ -1403,26 +1419,75 @@ initApp();
             }
         });
 
-        function logout() {
-            auth.signOut();
-            document.getElementById('appContainer').classList.remove('active');
-            
-            // Quitar splash y mostrar login correctamente
-document.getElementById('splash').classList.add('hide');
-setTimeout(() => {
-    document.getElementById('splash').remove();
-    const login = document.getElementById('loginContainer');
-    login.classList.add('show');   // Usa la clase .show
-    login.style.zIndex = '10000';  // Por encima de todo
-}, 900);
-            
-            // Limpiar formularios
-            document.getElementById('loginForm').style.display = 'block';
-            document.getElementById('registerForm').style.display = 'none';
-            document.getElementById('email').value = '';
-            document.getElementById('password').value = '';
-        }
 
+
+
+ function logout() {
+    // Mostrar mensaje inmediato para que el usuario sepa que está cerrando sesión
+    showNotification('👋 Cerrando sesión...');
+
+    auth.signOut().then(() => {
+        console.log('✅ Sesión cerrada en Firebase');
+
+        // === LIMPIEZA TOTAL DEL ESTADO ===
+        currentUser = null;
+        allData = [];
+        filteredData = [];
+
+        // Detener timer de conexión
+        if (connectionTimer) {
+            clearInterval(connectionTimer);
+            connectionTimer = null;
+        }
+        connectionStartTime = null;
+
+        // Ocultar toda la app
+        document.getElementById('appContainer').classList.remove('active');
+
+        // Limpiar notificaciones
+        document.getElementById('notification').classList.remove('show');
+        document.getElementById('connectionTime').style.display = 'none';
+
+        // === MOSTRAR LOGIN LIMPIO Y FUNCIONAL ===
+        const loginContainer = document.getElementById('loginContainer');
+
+        // Eliminar cualquier estilo inline que interfiera
+        loginContainer.removeAttribute('style');
+
+        // Usar SOLO la clase .show que controla todo en tu CSS
+        loginContainer.classList.add('show');
+
+        // Asegurar que el formulario de login esté visible
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('registerForm').style.display = 'none';
+
+        // Limpiar todos los campos
+        document.getElementById('email').value = '';
+        document.getElementById('password').value = '';
+
+        // === LO MÁS IMPORTANTE: Resetear el botón de login ===
+        const loginBtn = document.querySelector('#loginForm .btn-login');
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Iniciar Sesión';
+
+        // Limpiar mensajes
+        document.getElementById('loginError').classList.remove('show');
+        document.getElementById('loginError').textContent = '';
+        document.getElementById('loginSuccess').classList.remove('show');
+        document.getElementById('loginSuccess').textContent = '';
+
+        console.log('✅ Pantalla de login restaurada correctamente');
+
+    }).catch((error) => {
+        console.error('Error al cerrar sesión:', error);
+        alert('Error al cerrar sesión: ' + error.message);
+        // Aunque falle el signOut, igual forzamos el regreso al login
+        location.reload(); // Último recurso: recargar la página
+    });
+}   
+        
+        
+        
         function initApp() {
             console.log('🚀 Iniciando AirGuard...');
             createDashboardGauges();
@@ -2586,5 +2651,42 @@ setTimeout(() => {
     }, 900);
 }, 2800);
 
+
+
+// ====== DETECCIÓN DE WEBVIEW PARA DESCARGAS ======
+(function() {
+    // Detectar si está en App Inventor WebView
+    const isInAppInventor = /Android/i.test(navigator.userAgent) && 
+                            window.location.protocol === 'file:';
+    
+    if (isInAppInventor) {
+        console.log('📱 Ejecutando en App Inventor');
+        
+        // Interceptar todos los enlaces de descarga
+        document.addEventListener('click', function(e) {
+            const target = e.target.closest('a, button');
+            if (!target) return;
+            
+            // Si es un botón de descarga
+            const isDownloadButton = target.textContent.includes('Excel') || 
+                                    target.textContent.includes('CSV') || 
+                                    target.textContent.includes('Reporte') ||
+                                    target.textContent.includes('📊') ||
+                                    target.textContent.includes('📄') ||
+                                    target.onclick;
+            
+            if (isDownloadButton) {
+                console.log('✅ Descarga detectada en WebView');
+                // Permitir que la descarga continúe normalmente
+                setTimeout(() => {
+                    alert('📥 Archivo generado. Revisa tu carpeta de Descargas.');
+                }, 500);
+            }
+        }, true);
+    }
+})();
+
+
     </script>
 </body>
+</html>
