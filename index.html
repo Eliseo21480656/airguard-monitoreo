@@ -1,7 +1,11 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
+
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="mobile-web-app-capable" content="yes">
@@ -1260,1433 +1264,1121 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDXf14TEST2aoTbiA-ciF2Dm9_oYCddp3g",
-            authDomain: "app-monitoreo-itnl-v0.firebaseapp.com",
-            databaseURL: "https://app-monitoreo-itnl-v0-default-rtdb.firebaseio.com",
-            projectId: "app-monitoreo-itnl-v0",
-            storageBucket: "app-monitoreo-itnl-v0.firebasestorage.app",
-            messagingSenderId: "488643441374",
-            appId: "1:488643441374:web:d4cced988c096d31e8884f"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.database();
 
-        let currentUser = null;
-        let allData = [];
-        let filteredData = [];
-        let charts = {};
-        let gauges = {};
-        let chartRange = 'last50';
-        let connectionStartTime = null;
-        let connectionTimer = null;
-
-        // 7 variables principales del dashboard
-        const DASHBOARD_VARS = [
-            {id: 'CO', name: 'Monóxido de Carbono', unit: 'ppm', max: 100},
-            {id: 'CO2', name: 'Dióxido de Carbono', unit: 'ppm', max: 5000},
-            {id: 'PM1', name: 'Partículas Ultrafinas', unit: 'µg/m³', max: 100},
-            {id: 'PM25', name: 'Partículas Finas', unit: 'µg/m³', max: 150},
-            {id: 'PM10', name: 'Partículas Gruesas', unit: 'µg/m³', max: 350},
-            {id: 'Temp', name: 'Temperatura', unit: '°C', max: 50},
-            {id: 'Pressure', name: 'Presión Atmosférica', unit: 'Pa', max: 1050}
-        ];
-
-        const THRESHOLDS = {
-            CO: {good: 9, moderate: 35, critical: 50, max: 100},
-            CO2: {good: 1000, moderate: 2000, critical: 5000, max: 5000},
-            PM1: {good: 10, moderate: 25, critical: 50, max: 100},
-            PM25: {good: 12, moderate: 35.4, critical: 55.4, max: 150},
-            PM10: {good: 54, moderate: 154, critical: 254, max: 350},
-            Temp: {good: 25, moderate: 30, critical: 35, max: 50},
-            Pressure: {good: 1013, moderate: 1020, critical: 1030, max: 1050}
-        };
-
-        const gaugeStats = {};
-        DASHBOARD_VARS.forEach(v => {
-            gaugeStats[v.id] = {min: Infinity, max: -Infinity};
-        });
-
-        // Detector de conexión
-        window.addEventListener('online', () => {
-            document.getElementById('offlineScreen').classList.remove('show');
-        });
-        window.addEventListener('offline', () => {
-            document.getElementById('offlineScreen').classList.add('show');
-        });
-
-        // Login - MANTENER EL ORIGINAL QUE FUNCIONA
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
- 
-
-
-            const btn = e.target.querySelector('.btn-login');
-btn.disabled = true;
-btn.textContent = 'Iniciando...';
-
-try {
-    const cred = await auth.signInWithEmailAndPassword(email, password);
-    // ... resto del código de éxito
-} catch (error) {
-    // ... mostrar error
-} finally {
-    // === SIEMPRE se ejecuta: restablece el botón ===
-    btn.disabled = false;
-    btn.textContent = 'Iniciar Sesión';
-}
-
-
-
-
-            try {
-                const cred = await auth.signInWithEmailAndPassword(email, password);
-                currentUser = cred.user;
-                console.log('✅ Login OK');
-
-                document.getElementById('loginSuccess').textContent = '¡Bienvenido!';
-                document.getElementById('loginSuccess').classList.add('show');
-
-                setTimeout(() => {
-                    
-                    // Quitar el fondo granate para siempre
-document.getElementById('loginContainer').style.display = 'none';
-document.getElementById('loginContainer').style.visibility = 'hidden';
-document.getElementById('loginContainer').style.zIndex = '-1';
-
-
-document.getElementById('appContainer').classList.add('active');
-initApp();
-                }, 1000);
-            } catch (error) {
-                document.getElementById('loginError').textContent = error.message;
-                document.getElementById('loginError').classList.add('show');
-                btn.disabled = false;
-                btn.textContent = 'Iniciar Sesión';
-            }
-        });
-
-        // Manejador de formulario de registro
-        document.getElementById('registerForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('registerEmail').value;
-            const password = document.getElementById('registerPassword').value;
-            const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
-            const btn = e.target.querySelector('.btn-login');
-
-            // Validar contraseñas
-            if (password !== passwordConfirm) {
-                document.getElementById('loginError').textContent = 'Las contraseñas no coinciden';
-                document.getElementById('loginError').classList.add('show');
-                return;
-            }
-
-            btn.disabled = true;
-            btn.textContent = 'Creando cuenta...';
-
-            try {
-                const cred = await auth.createUserWithEmailAndPassword(email, password);
-                console.log('✅ Cuenta creada:', cred.user.email);
-
-                document.getElementById('loginSuccess').textContent = '¡Cuenta creada! Iniciando sesión...';
-                document.getElementById('loginSuccess').classList.add('show');
-                document.getElementById('loginError').classList.remove('show');
-
-                setTimeout(() => {
-                    currentUser = cred.user;
-                    document.getElementById('loginContainer').style.display = 'none';
-                    document.getElementById('appContainer').classList.add('active');
-                    initApp();
-                }, 1500);
-            } catch (error) {
-                let errorMsg = 'Error al crear cuenta';
-                if (error.code === 'auth/email-already-in-use') {
-                    errorMsg = 'Este email ya está registrado';
-                } else if (error.code === 'auth/invalid-email') {
-                    errorMsg = 'Email inválido';
-                } else if (error.code === 'auth/weak-password') {
-                    errorMsg = 'La contraseña debe tener al menos 6 caracteres';
-                }
-                
-                document.getElementById('loginError').textContent = errorMsg;
-                document.getElementById('loginError').classList.add('show');
-                btn.disabled = false;
-                btn.textContent = 'Registrar Cuenta';
-            }
-        });
-
-
-
-
- function logout() {
-    // Mostrar mensaje inmediato para que el usuario sepa que está cerrando sesión
-    showNotification('👋 Cerrando sesión...');
-
-    auth.signOut().then(() => {
-        console.log('✅ Sesión cerrada en Firebase');
-
-        // === LIMPIEZA TOTAL DEL ESTADO ===
-        currentUser = null;
-        allData = [];
-        filteredData = [];
-
-        // Detener timer de conexión
-        if (connectionTimer) {
-            clearInterval(connectionTimer);
-            connectionTimer = null;
-        }
-        connectionStartTime = null;
-
-        // Ocultar toda la app
-        document.getElementById('appContainer').classList.remove('active');
-
-        // Limpiar notificaciones
-        document.getElementById('notification').classList.remove('show');
-        document.getElementById('connectionTime').style.display = 'none';
-
-        // === MOSTRAR LOGIN LIMPIO Y FUNCIONAL ===
-        const loginContainer = document.getElementById('loginContainer');
-
-        // Eliminar cualquier estilo inline que interfiera
-        loginContainer.removeAttribute('style');
-
-        // Usar SOLO la clase .show que controla todo en tu CSS
-        loginContainer.classList.add('show');
-
-        // Asegurar que el formulario de login esté visible
-        document.getElementById('loginForm').style.display = 'block';
-        document.getElementById('registerForm').style.display = 'none';
-
-        // Limpiar todos los campos
-        document.getElementById('email').value = '';
-        document.getElementById('password').value = '';
-
-        // === LO MÁS IMPORTANTE: Resetear el botón de login ===
-        const loginBtn = document.querySelector('#loginForm .btn-login');
-        loginBtn.disabled = false;
-        loginBtn.textContent = 'Iniciar Sesión';
-
-        // Limpiar mensajes
-        document.getElementById('loginError').classList.remove('show');
-        document.getElementById('loginError').textContent = '';
-        document.getElementById('loginSuccess').classList.remove('show');
-        document.getElementById('loginSuccess').textContent = '';
-
-        console.log('✅ Pantalla de login restaurada correctamente');
-
-    }).catch((error) => {
-        console.error('Error al cerrar sesión:', error);
-        alert('Error al cerrar sesión: ' + error.message);
-        // Aunque falle el signOut, igual forzamos el regreso al login
-        location.reload(); // Último recurso: recargar la página
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDXf14TEST2aoTbiA-ciF2Dm9_oYCddp3g",
+        authDomain: "app-monitoreo-itnl-v0.firebaseapp.com",
+        databaseURL: "https://app-monitoreo-itnl-v0-default-rtdb.firebaseio.com",
+        projectId: "app-monitoreo-itnl-v0",
+        storageBucket: "app-monitoreo-itnl-v0.firebasestorage.app",
+        messagingSenderId: "488643441374",
+        appId: "1:488643441374:web:d4cced988c096d31e8884f"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+    let currentUser = null;
+    let allData = [];
+    let filteredData = [];
+    let charts = {};
+    let gauges = {};
+    let chartRange = 'last50';
+    let connectionStartTime = null;
+    let connectionTimer = null;
+    // 7 variables principales del dashboard
+    const DASHBOARD_VARS = [
+        {id: 'CO', name: 'Monóxido de Carbono', unit: 'ppm', max: 100},
+        {id: 'CO2', name: 'Dióxido de Carbono', unit: 'ppm', max: 5000},
+        {id: 'PM1', name: 'Partículas Ultrafinas', unit: 'µg/m³', max: 100},
+        {id: 'PM25', name: 'Partículas Finas', unit: 'µg/m³', max: 150},
+        {id: 'PM10', name: 'Partículas Gruesas', unit: 'µg/m³', max: 350},
+        {id: 'Temp', name: 'Temperatura', unit: '°C', max: 50},
+        {id: 'Pressure', name: 'Presión Atmosférica', unit: 'Pa', max: 1050}
+    ];
+    const THRESHOLDS = {
+        CO: {good: 9, moderate: 35, critical: 50, max: 100},
+        CO2: {good: 1000, moderate: 2000, critical: 5000, max: 5000},
+        PM1: {good: 10, moderate: 25, critical: 50, max: 100},
+        PM25: {good: 12, moderate: 35.4, critical: 55.4, max: 150},
+        PM10: {good: 54, moderate: 154, critical: 254, max: 350},
+        Temp: {good: 25, moderate: 30, critical: 35, max: 50},
+        Pressure: {good: 1013, moderate: 1020, critical: 1030, max: 1050}
+    };
+    const gaugeStats = {};
+    DASHBOARD_VARS.forEach(v => {
+        gaugeStats[v.id] = {min: Infinity, max: -Infinity};
     });
-}   
-        
-        
-        
-        function initApp() {
-            console.log('🚀 Iniciando AirGuard...');
-            createDashboardGauges();
-            createCharts();
-            setupFirebase();
-            updateBanner('connected', 'Conectado - Tiempo real');
-            
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('dateFrom').value = today;
-            document.getElementById('dateTo').value = today;
-            document.getElementById('chartDateFrom').value = today;
-            document.getElementById('chartDateTo').value = today;
-            
-            // Actualizar cada 10 segundos
-            setInterval(checkForUpdates, 10000);
+    // Detector de conexión
+    window.addEventListener('online', () => {
+        document.getElementById('offlineScreen').classList.remove('show');
+    });
+    window.addEventListener('offline', () => {
+        document.getElementById('offlineScreen').classList.add('show');
+    });
+    // Login
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const btn = e.target.querySelector('.btn-login');
+        btn.disabled = true;
+        btn.textContent = 'Iniciando...';
+        try {
+            const cred = await auth.signInWithEmailAndPassword(email, password);
+            currentUser = cred.user;
+            console.log('✅ Login OK');
+            document.getElementById('loginSuccess').textContent = '¡Bienvenido!';
+            document.getElementById('loginSuccess').classList.add('show');
+            setTimeout(() => {
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('loginContainer').style.visibility = 'hidden';
+                document.getElementById('loginContainer').style.zIndex = '-1';
+                document.getElementById('appContainer').classList.add('active');
+                initApp();
+            }, 1000);
+        } catch (error) {
+            document.getElementById('loginError').textContent = error.message;
+            document.getElementById('loginError').classList.add('show');
+            btn.disabled = false;
+            btn.textContent = 'Iniciar Sesión';
         }
-
-        function createDashboardGauges() {
-            const container = document.getElementById('dashboardGauges');
-            container.innerHTML = DASHBOARD_VARS.map(v => `
-                <div class="gauge-container">
-                    <div class="gauge-name">${v.name}</div>
-                    <canvas id="gauge${v.id}" class="gauge-canvas" width="140" height="140"></canvas>
-                    <div class="gauge-value" id="val${v.id}">--</div>
-                    <div class="gauge-unit">${v.unit}</div>
-                    <div class="badge good" id="stat${v.id}">Sin datos</div>
-                    <div class="gauge-stats">
-                        <div class="gauge-stat">
-                            <div class="gauge-stat-label">Mín</div>
-                            <div class="gauge-stat-value" id="min${v.id}">--</div>
-                        </div>
-                        <div class="gauge-stat">
-                            <div class="gauge-stat-label">Máx</div>
-                            <div class="gauge-stat-value" id="max${v.id}">--</div>
-                        </div>
+    });
+    // Registro
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('registerEmail').value;
+        const password = document.getElementById('registerPassword').value;
+        const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+        const btn = e.target.querySelector('.btn-login');
+        if (password !== passwordConfirm) {
+            document.getElementById('loginError').textContent = 'Las contraseñas no coinciden';
+            document.getElementById('loginError').classList.add('show');
+            return;
+        }
+        btn.disabled = true;
+        btn.textContent = 'Creando cuenta...';
+        try {
+            const cred = await auth.createUserWithEmailAndPassword(email, password);
+            console.log('✅ Cuenta creada:', cred.user.email);
+            document.getElementById('loginSuccess').textContent = '¡Cuenta creada! Iniciando sesión...';
+            document.getElementById('loginSuccess').classList.add('show');
+            document.getElementById('loginError').classList.remove('show');
+            setTimeout(() => {
+                currentUser = cred.user;
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('appContainer').classList.add('active');
+                initApp();
+            }, 1500);
+        } catch (error) {
+            let errorMsg = 'Error al crear cuenta';
+            if (error.code === 'auth/email-already-in-use') {
+                errorMsg = 'Este email ya está registrado';
+            } else if (error.code === 'auth/invalid-email') {
+                errorMsg = 'Email inválido';
+            } else if (error.code === 'auth/weak-password') {
+                errorMsg = 'La contraseña debe tener al menos 6 caracteres';
+            }
+            document.getElementById('loginError').textContent = errorMsg;
+            document.getElementById('loginError').classList.add('show');
+            btn.disabled = false;
+            btn.textContent = 'Registrar Cuenta';
+        }
+    });
+    function logout() {
+        showNotification('👋 Cerrando sesión...');
+        auth.signOut().then(() => {
+            console.log('✅ Sesión cerrada en Firebase');
+            currentUser = null;
+            allData = [];
+            filteredData = [];
+            if (connectionTimer) {
+                clearInterval(connectionTimer);
+                connectionTimer = null;
+            }
+            connectionStartTime = null;
+            document.getElementById('appContainer').classList.remove('active');
+            document.getElementById('notification').classList.remove('show');
+            document.getElementById('connectionTime').style.display = 'none';
+            const loginContainer = document.getElementById('loginContainer');
+            loginContainer.removeAttribute('style');
+            loginContainer.classList.add('show');
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+            const loginBtn = document.querySelector('#loginForm .btn-login');
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Iniciar Sesión';
+            document.getElementById('loginError').classList.remove('show');
+            document.getElementById('loginError').textContent = '';
+            document.getElementById('loginSuccess').classList.remove('show');
+            document.getElementById('loginSuccess').textContent = '';
+            console.log('✅ Pantalla de login restaurada correctamente');
+        }).catch((error) => {
+            console.error('Error al cerrar sesión:', error);
+            alert('Error al cerrar sesión: ' + error.message);
+            location.reload();
+        });
+    }
+    function initApp() {
+        console.log('🚀 Iniciando AirGuard...');
+        createDashboardGauges();
+        createCharts();
+        setupFirebase();
+        updateBanner('connected', 'Conectado - Tiempo real');
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('dateFrom').value = today;
+        document.getElementById('dateTo').value = today;
+        document.getElementById('chartDateFrom').value = today;
+        document.getElementById('chartDateTo').value = today;
+        setInterval(checkForUpdates, 10000);
+    }
+    function createDashboardGauges() {
+        const container = document.getElementById('dashboardGauges');
+        container.innerHTML = DASHBOARD_VARS.map(v => `
+            <div class="gauge-container">
+                <div class="gauge-name">${v.name}</div>
+                <canvas id="gauge${v.id}" class="gauge-canvas" width="140" height="140"></canvas>
+                <div class="gauge-value" id="val${v.id}">--</div>
+                <div class="gauge-unit">${v.unit}</div>
+                <div class="badge good" id="stat${v.id}">Sin datos</div>
+                <div class="gauge-stats">
+                    <div class="gauge-stat">
+                        <div class="gauge-stat-label">Mín</div>
+                        <div class="gauge-stat-value" id="min${v.id}">--</div>
+                    </div>
+                    <div class="gauge-stat">
+                        <div class="gauge-stat-label">Máx</div>
+                        <div class="gauge-stat-value" id="max${v.id}">--</div>
                     </div>
                 </div>
-            `).join('');
-
-            DASHBOARD_VARS.forEach(v => {
-                const canvas = document.getElementById('gauge' + v.id);
-                const ctx = canvas.getContext('2d');
-                ctx.imageSmoothingEnabled = true;
-                ctx.imageSmoothingQuality = 'high';
-                gauges[v.id] = { canvas, ctx, value: 0 };
-                drawGauge(v.id, 0);
-            });
+            </div>
+        `).join('');
+        DASHBOARD_VARS.forEach(v => {
+            const canvas = document.getElementById('gauge' + v.id);
+            const ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            gauges[v.id] = { canvas, ctx, value: 0 };
+            drawGauge(v.id, 0);
+        });
+    }
+    function drawGauge(id, value) {
+        const gauge = gauges[id];
+        const ctx = gauge.ctx;
+        const canvas = gauge.canvas;
+        const w = canvas.width;
+        const h = canvas.height;
+        canvas.style.width = w + 'px';
+        canvas.style.height = h + 'px';
+        const cx = w / 2;
+        const cy = h / 2;
+        const radius = Math.min(w, h) / 2 - 12;
+        ctx.clearRect(0, 0, w, h);
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0.75 * Math.PI, 2.25 * Math.PI);
+        ctx.lineWidth = 14;
+        ctx.strokeStyle = '#E5E7EB';
+        ctx.stroke();
+        const threshold = THRESHOLDS[id];
+        const percent = Math.min(value / threshold.max, 1);
+        const endAngle = 0.75 * Math.PI + percent * 1.5 * Math.PI;
+        const gradient = ctx.createLinearGradient(0, 0, w, 0);
+        if (value <= threshold.good) {
+            gradient.addColorStop(0, '#10B981');
+            gradient.addColorStop(1, '#34D399');
+        } else if (value <= threshold.moderate) {
+            gradient.addColorStop(0, '#F59E0B');
+            gradient.addColorStop(1, '#FBBF24');
+        } else {
+            gradient.addColorStop(0, '#EF4444');
+            gradient.addColorStop(1, '#F87171');
         }
-
-        function drawGauge(id, value) {
-            const gauge = gauges[id];
-            const ctx = gauge.ctx;
-            const canvas = gauge.canvas;
-            
-            const w = canvas.width;
-            const h = canvas.height;
-            canvas.style.width = w + 'px';
-            canvas.style.height = h + 'px';
-            
-            const cx = w / 2;
-            const cy = h / 2;
-            const radius = Math.min(w, h) / 2 - 12;
-
-            ctx.clearRect(0, 0, w, h);
-
-            // Background arc
-            ctx.beginPath();
-            ctx.arc(cx, cy, radius, 0.75 * Math.PI, 2.25 * Math.PI);
-            ctx.lineWidth = 14;
-            ctx.strokeStyle = '#E5E7EB';
-            ctx.stroke();
-
-            const threshold = THRESHOLDS[id];
-            const percent = Math.min(value / threshold.max, 1);
-            const endAngle = 0.75 * Math.PI + percent * 1.5 * Math.PI;
-
-            // Value arc with gradient
-            const gradient = ctx.createLinearGradient(0, 0, w, 0);
-            if (value <= threshold.good) {
-                gradient.addColorStop(0, '#10B981');
-                gradient.addColorStop(1, '#34D399');
-            } else if (value <= threshold.moderate) {
-                gradient.addColorStop(0, '#F59E0B');
-                gradient.addColorStop(1, '#FBBF24');
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0.75 * Math.PI, endAngle);
+        ctx.lineWidth = 14;
+        ctx.strokeStyle = gradient;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius - 24, 0, 2 * Math.PI);
+        const centerGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius - 24);
+        centerGradient.addColorStop(0, '#858585');
+        centerGradient.addColorStop(1, '#5e5e5e');
+        ctx.fillStyle = centerGradient;
+        ctx.fill();
+        const needleLength = radius - 28;
+        const needleAngle = 0.75 * Math.PI + percent * 1.5 * Math.PI;
+        const needleX = cx + Math.cos(needleAngle) * needleLength;
+        const needleY = cy + Math.sin(needleAngle) * needleLength;
+        ctx.beginPath();
+        ctx.moveTo(cx + 2, cy + 2);
+        ctx.lineTo(needleX + 2, needleY + 2);
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+        ctx.lineCap = 'round';
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(needleX, needleY);
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineCap = 'round';
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(cx, cy, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        ctx.strokeStyle = '#5e5e5e';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+    function updateGauge(id, value) {
+        drawGauge(id, value);
+        updateGaugeStats(id, value);
+    }
+    function updateGaugeStats(id, value) {
+        if (value < gaugeStats[id].min) gaugeStats[id].min = value;
+        if (value > gaugeStats[id].max) gaugeStats[id].max = value;
+        document.getElementById('min' + id).textContent = gaugeStats[id].min !== Infinity ?
+            gaugeStats[id].min.toFixed(1) : '--';
+        document.getElementById('max' + id).textContent = gaugeStats[id].max !== -Infinity ?
+            gaugeStats[id].max.toFixed(1) : '--';
+    }
+    function setupFirebase() {
+        const deviceId = '0a10aced202194944a053768';
+        db.ref('.info/connected').on('value', snap => {
+            const connected = snap.val();
+            if (connected) {
+                updateBanner('connected', 'Conectado - Tiempo real');
             } else {
-                gradient.addColorStop(0, '#EF4444');
-                gradient.addColorStop(1, '#F87171');
+                updateBanner('disconnected', 'Firebase desconectado');
             }
-
-            ctx.beginPath();
-            ctx.arc(cx, cy, radius, 0.75 * Math.PI, endAngle);
-            ctx.lineWidth = 14;
-            ctx.strokeStyle = gradient;
-            ctx.lineCap = 'round';
-            ctx.stroke();
-
-            // Center circle
-            ctx.beginPath();
-            ctx.arc(cx, cy, radius - 24, 0, 2 * Math.PI);
-            const centerGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius - 24);
-            centerGradient.addColorStop(0, '#858585');
-            centerGradient.addColorStop(1, '#5e5e5e');
-            ctx.fillStyle = centerGradient;
-            ctx.fill();
-
-            // Needle
-            const needleLength = radius - 28;
-            const needleAngle = 0.75 * Math.PI + percent * 1.5 * Math.PI;
-            const needleX = cx + Math.cos(needleAngle) * needleLength;
-            const needleY = cy + Math.sin(needleAngle) * needleLength;
-
-            // Needle shadow
-            ctx.beginPath();
-            ctx.moveTo(cx + 2, cy + 2);
-            ctx.lineTo(needleX + 2, needleY + 2);
-            ctx.lineWidth = 4;
-            ctx.strokeStyle = 'rgba(0,0,0,0.3)';
-            ctx.lineCap = 'round';
-            ctx.stroke();
-
-            // Needle
-            ctx.beginPath();
-            ctx.moveTo(cx, cy);
-            ctx.lineTo(needleX, needleY);
-            ctx.lineWidth = 4;
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineCap = 'round';
-            ctx.stroke();
-
-            // Center bolt
-            ctx.beginPath();
-            ctx.arc(cx, cy, 5, 0, 2 * Math.PI);
-            ctx.fillStyle = '#ffffff';
-            ctx.fill();
-            ctx.strokeStyle = '#5e5e5e';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-        }
-
-        function updateGauge(id, value) {
-            drawGauge(id, value);
-            updateGaugeStats(id, value);
-        }
-
-        function updateGaugeStats(id, value) {
-            if (value < gaugeStats[id].min) gaugeStats[id].min = value;
-            if (value > gaugeStats[id].max) gaugeStats[id].max = value;
-
-            document.getElementById('min' + id).textContent = gaugeStats[id].min !== Infinity ? 
-                gaugeStats[id].min.toFixed(1) : '--';
-            document.getElementById('max' + id).textContent = gaugeStats[id].max !== -Infinity ? 
-                gaugeStats[id].max.toFixed(1) : '--';
-        }
-
-        function setupFirebase() {
-            const deviceId = '0a10aced202194944a053768';
-            
-            db.ref('.info/connected').on('value', snap => {
-                const connected = snap.val();
-                if (connected) {
-                    updateBanner('connected', 'Conectado - Tiempo real');
-                } else {
-                    updateBanner('disconnected', 'Firebase desconectado');
-                }
-            });
-
-            const lecturasRef = db.ref(`dispositivos/${deviceId}/lecturas`);
-
-            lecturasRef.limitToLast(1).on('child_added', snap => {
-                processNewestData(snap);
-            });
-
-            lecturasRef.limitToLast(1).on('child_changed', snap => {
-                processNewestData(snap);
-            });
-
-            lecturasRef.on('value', snap => {
-                const data = snap.val();
-                if (data) {
-                    allData = [];
-                    
-                    Object.entries(data).forEach(([year, months]) => {
-                        Object.entries(months).forEach(([month, days]) => {
-                            Object.entries(days).forEach(([day, hours]) => {
-                                Object.entries(hours).forEach(([hour, readings]) => {
-                                    Object.entries(readings).forEach(([id, reading]) => {
-                                        allData.push({
-                                            ...reading,
-                                            id: id,
-                                            year, month, day, hour,
-                                            timestamp: reading.timestamp ? new Date(reading.timestamp).getTime() : Date.now()
-                                        });
+        });
+        const lecturasRef = db.ref(`dispositivos/${deviceId}/lecturas`);
+        lecturasRef.limitToLast(1).on('child_added', snap => {
+            processNewestData(snap);
+        });
+        lecturasRef.limitToLast(1).on('child_changed', snap => {
+            processNewestData(snap);
+        });
+        lecturasRef.on('value', snap => {
+            const data = snap.val();
+            if (data) {
+                allData = [];
+                Object.entries(data).forEach(([year, months]) => {
+                    Object.entries(months).forEach(([month, days]) => {
+                        Object.entries(days).forEach(([day, hours]) => {
+                            Object.entries(hours).forEach(([hour, readings]) => {
+                                Object.entries(readings).forEach(([id, reading]) => {
+                                    allData.push({
+                                        ...reading,
+                                        id: id,
+                                        year, month, day, hour,
+                                        timestamp: reading.timestamp ? new Date(reading.timestamp).getTime() : Date.now()
                                     });
                                 });
                             });
                         });
                     });
-
-                    allData.sort((a,b) => b.timestamp - a.timestamp);
-                    console.log('📊 Datos cargados:', allData.length);
-                    document.getElementById('totalCount').textContent = allData.length;
-                    
-                    filterTime('all');
-                    updatePeriodBanner();
-                }
-            });
-        }
-
-        function processNewestData(yearSnap) {
-            const yearData = yearSnap.val();
-            let latestReading = null;
-            let latestTimestamp = 0;
-
-            Object.values(yearData).forEach(months => {
-                Object.values(months).forEach(days => {
-                    Object.values(days).forEach(hours => {
-                        Object.values(hours).forEach(reading => {
-                            const ts = reading.timestamp ? new Date(reading.timestamp).getTime() : 0;
-                            if (ts > latestTimestamp) {
-                                latestTimestamp = ts;
-                                latestReading = reading;
-                            }
-                        });
+                });
+                allData.sort((a,b) => b.timestamp - a.timestamp);
+                console.log('📊 Datos cargados:', allData.length);
+                document.getElementById('totalCount').textContent = allData.length;
+                filterTime('all');
+                updatePeriodBanner();
+            }
+        });
+    }
+    function processNewestData(yearSnap) {
+        const yearData = yearSnap.val();
+        let latestReading = null;
+        let latestTimestamp = 0;
+        Object.values(yearData).forEach(months => {
+            Object.values(months).forEach(days => {
+                Object.values(days).forEach(hours => {
+                    Object.values(hours).forEach(reading => {
+                        const ts = reading.timestamp ? new Date(reading.timestamp).getTime() : 0;
+                        if (ts > latestTimestamp) {
+                            latestTimestamp = ts;
+                            latestReading = reading;
+                        }
                     });
                 });
             });
-
-            if (latestReading) {
-                processData(latestReading);
-            }
+        });
+        if (latestReading) {
+            processData(latestReading);
         }
-
-        function processData(data) {
-            const parsed = {
-                MQ7: parseFloat(data.MQ7) || 0,
-                MQ135: parseFloat(data.MQ135) || 0,
-                'PM1.0': parseFloat(data.PM1_0) || 0,
-                'PM2.5': parseFloat(data.PM2_5) || 0,
-                PM10: parseFloat(data.PM10) || 0,
-                Temperature: parseFloat(data.Temperature) || 0,
-                Pressure: parseFloat(data.Pressure) || 0,
-                Altitude: parseFloat(data.Altitude) || 0
-            };
-            updateSensors(parsed);
+    }
+    function processData(data) {
+        const parsed = {
+            MQ7: parseFloat(data.MQ7) || 0,
+            MQ135: parseFloat(data.MQ135) || 0,
+            'PM1.0': parseFloat(data.PM1_0) || 0,
+            'PM2.5': parseFloat(data.PM2_5) || 0,
+            PM10: parseFloat(data.PM10) || 0,
+            Temperature: parseFloat(data.Temperature) || 0,
+            Pressure: parseFloat(data.Pressure) || 0,
+            Altitude: parseFloat(data.Altitude) || 0
+        };
+        updateSensors(parsed);
+    }
+    function updateSensors(data) {
+        const co = (data.MQ7 * 0.005).toFixed(1);
+        const co2 = (data.MQ135 * 0.5).toFixed(0);
+        document.getElementById('valCO').textContent = co;
+        document.getElementById('valCO2').textContent = co2;
+        document.getElementById('valPM1').textContent = data['PM1.0'] || 0;
+        document.getElementById('valPM25').textContent = data['PM2.5'] || 0;
+        document.getElementById('valPM10').textContent = data.PM10 || 0;
+        document.getElementById('valTemp').textContent = data.Temperature.toFixed(1);
+        document.getElementById('valPressure').textContent = data.Pressure.toFixed(1);
+        updateGauge('CO', parseFloat(co));
+        updateGauge('CO2', parseFloat(co2));
+        updateGauge('PM1', data['PM1.0']);
+        updateGauge('PM25', data['PM2.5']);
+        updateGauge('PM10', data.PM10);
+        updateGauge('Temp', data.Temperature);
+        updateGauge('Pressure', data.Pressure);
+        updateStatus('CO', parseFloat(co));
+        updateStatus('CO2', parseFloat(co2));
+        updateStatus('PM1', data['PM1.0']);
+        updateStatus('PM25', data['PM2.5']);
+        updateStatus('PM10', data.PM10);
+        checkAlerts({
+            CO: parseFloat(co),
+            CO2: parseFloat(co2),
+            PM1: data['PM1.0'],
+            PM25: data['PM2.5'],
+            PM10: data.PM10,
+            Temp: data.Temperature
+        });
+        document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('es-MX');
+    }
+    function updateStatus(sensor, value) {
+        const badge = document.getElementById('stat' + sensor);
+        if (!badge || !THRESHOLDS[sensor]) return;
+        const t = THRESHOLDS[sensor];
+        if (value <= t.good) {
+            badge.textContent = 'Bueno';
+            badge.className = 'badge good';
+        } else if (value <= t.moderate) {
+            badge.textContent = 'Moderado';
+            badge.className = 'badge moderate';
+        } else {
+            badge.textContent = 'Insalubre';
+            badge.className = 'badge unhealthy';
         }
-
-        function updateSensors(data) {
-            const co = (data.MQ7 * 0.005).toFixed(1);
-            const co2 = (data.MQ135 * 0.5).toFixed(0);
-
-            document.getElementById('valCO').textContent = co;
-            document.getElementById('valCO2').textContent = co2;
-            document.getElementById('valPM1').textContent = data['PM1.0'] || 0;
-            document.getElementById('valPM25').textContent = data['PM2.5'] || 0;
-            document.getElementById('valPM10').textContent = data.PM10 || 0;
-            document.getElementById('valTemp').textContent = data.Temperature.toFixed(1);
-            document.getElementById('valPressure').textContent = data.Pressure.toFixed(1);
-
-            updateGauge('CO', parseFloat(co));
-            updateGauge('CO2', parseFloat(co2));
-            updateGauge('PM1', data['PM1.0']);
-            updateGauge('PM25', data['PM2.5']);
-            updateGauge('PM10', data.PM10);
-            updateGauge('Temp', data.Temperature);
-            updateGauge('Pressure', data.Pressure);
-
-            updateStatus('CO', parseFloat(co));
-            updateStatus('CO2', parseFloat(co2));
-            updateStatus('PM1', data['PM1.0']);
-            updateStatus('PM25', data['PM2.5']);
-            updateStatus('PM10', data.PM10);
-
-            checkAlerts({
-                CO: parseFloat(co),
-                CO2: parseFloat(co2),
-                PM1: data['PM1.0'],
-                PM25: data['PM2.5'],
-                PM10: data.PM10,
-                Temp: data.Temperature
-            });
-
-            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('es-MX');
-        }
-
-        function updateStatus(sensor, value) {
-            const badge = document.getElementById('stat' + sensor);
-            if (!badge || !THRESHOLDS[sensor]) return;
-
-            const t = THRESHOLDS[sensor];
-            if (value <= t.good) {
-                badge.textContent = 'Bueno';
-                badge.className = 'badge good';
-            } else if (value <= t.moderate) {
-                badge.textContent = 'Moderado';
-                badge.className = 'badge moderate';
-            } else {
-                badge.textContent = 'Insalubre';
-                badge.className = 'badge unhealthy';
-            }
-        }
-
-        function checkAlerts(values) {
-            if (values.CO > THRESHOLDS.CO.critical) showNotification(`⚠️ CO crítico: ${values.CO} ppm`);
-            if (values.CO2 > THRESHOLDS.CO2.critical) showNotification(`⚠️ CO2 crítico: ${values.CO2} ppm`);
-            if (values.PM1 > THRESHOLDS.PM1.critical) showNotification(`⚠️ PM1.0: ${values.PM1} µg/m³`);
-            if (values.PM25 > THRESHOLDS.PM25.critical) showNotification(`⚠️ PM2.5: ${values.PM25} µg/m³`);
-            if (values.PM10 > THRESHOLDS.PM10.critical) showNotification(`⚠️ PM10: ${values.PM10} µg/m³`);
-            if (values.Temp > THRESHOLDS.Temp.critical) showNotification(`⚠️ Temperatura: ${values.Temp}°C`);
-        }
-
-        function showNotification(text) {
-            const notif = document.getElementById('notification');
-            document.getElementById('notifText').textContent = text;
-            notif.classList.add('show');
-            setTimeout(() => notif.classList.remove('show'), 5000);
-        }
-
-        function updateBanner(status, text) {
-            const banner = document.getElementById('banner');
-            banner.className = `banner ${status}`;
-            banner.querySelector('.dot').className = `dot ${status}`;
-            document.getElementById('bannerText').textContent = text;
-            
-            // Iniciar contador de tiempo conectado
-            if (status === 'connected') {
-                if (!connectionStartTime) {
-                    connectionStartTime = Date.now();
-                    startConnectionTimer();
-                }
-                document.getElementById('connectionTime').style.display = 'block';
-            } else {
-                document.getElementById('connectionTime').style.display = 'none';
-            }
-        }
-
-        function startConnectionTimer() {
-            if (connectionTimer) clearInterval(connectionTimer);
-            
-            connectionTimer = setInterval(() => {
-                if (!connectionStartTime) return;
-                
-                const elapsed = Date.now() - connectionStartTime;
-                const hours = Math.floor(elapsed / 3600000);
-                const minutes = Math.floor((elapsed % 3600000) / 60000);
-                const seconds = Math.floor((elapsed % 60000) / 1000);
-                
-                const timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-                document.getElementById('timeCounter').textContent = timeStr;
-            }, 1000);
-        }
-
-        function updatePeriodBanner() {
-            if (allData.length === 0) {
-                document.getElementById('periodBanner').style.display = 'none';
-                return;
-            }
-            
-            // Ordenar por timestamp
-            const sorted = [...allData].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-            const firstRecord = new Date(sorted[0].timestamp);
-            const lastRecord = new Date(sorted[sorted.length - 1].timestamp);
-            
-            // Formatear fechas
-            const formatDate = (date) => {
-                return date.toLocaleString('es-MX', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-            };
-            
-            document.getElementById('firstRecordDate').textContent = formatDate(firstRecord);
-            document.getElementById('lastRecordDate').textContent = formatDate(lastRecord);
-            
-            // Calcular duración
-            const diffMs = lastRecord - firstRecord;
-            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-            const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-            
-            let durationStr = '';
-            if (diffDays > 0) durationStr += `${diffDays} día${diffDays > 1 ? 's' : ''}`;
-            if (diffHours > 0) durationStr += ` ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
-            if (diffDays === 0 && diffHours === 0 && diffMinutes > 0) durationStr += `${diffMinutes} minuto${diffMinutes > 1 ? 's' : ''}`;
-            
-            document.getElementById('recordDuration').textContent = `Duración total: ${durationStr || 'Menos de 1 minuto'}`;
-            document.getElementById('periodBanner').style.display = 'block';
-        }
-
-        function toggleRegisterForm() {
-            const loginForm = document.getElementById('loginForm');
-            const registerForm = document.getElementById('registerForm');
-            
-            if (loginForm.style.display === 'none') {
-                loginForm.style.display = 'block';
-                registerForm.style.display = 'none';
-                document.getElementById('loginError').textContent = '';
-                document.getElementById('loginError').classList.remove('show');
-            } else {
-                loginForm.style.display = 'none';
-                registerForm.style.display = 'block';
-                document.getElementById('loginError').textContent = '';
-                document.getElementById('loginError').classList.remove('show');
-            }
-        }
-
-        function refreshData() {
-            console.log('🔄 Actualizando datos...');
-            showNotification('🔄 Actualizando datos...');
-        }
-
-        function checkForUpdates() {
-            console.log('✓ Verificación automática');
-        }
-
-        // PREDICCIONES ML
-        const PREDICTION_VARS = [
-            {api: 'MQ7', name: 'CO (Monóxido)', unit: 'ppm', convert: v => v * 0.005},
-            {api: 'MQ135', name: 'CO2 (Dióxido)', unit: 'ppm', convert: v => v * 0.5},
-            {api: 'PM1.0', name: 'PM1.0', unit: 'µg/m³', convert: v => v},
-            {api: 'PM2.5', name: 'PM2.5', unit: 'µg/m³', convert: v => v},
-            {api: 'PM10', name: 'PM10', unit: 'µg/m³', convert: v => v},
-            {api: 'Temperatura', name: 'Temperatura', unit: '°C', convert: v => v},
-            {api: 'Presion', name: 'Presión', unit: 'Pa', convert: v => v},
-            {api: 'Altitud', name: 'Altitud', unit: 'm', convert: v => v}
-        ];
-
-        async function loadPredictions() {
-            if (!navigator.onLine) {
-                alert('⚠️ Necesitas conexión a internet para generar predicciones');
-                return;
-            }
-
-            if (allData.length === 0) {
-                alert('⚠️ No hay datos históricos. Espera a que se carguen datos de Firebase.');
-                return;
-            }
-
-            document.getElementById('predictionsLoading').style.display = 'block';
-            document.getElementById('predictionsContainer').innerHTML = '';
-
-            try {
-                showNotification('📊 Analizando datos históricos...');
-                
-                // Intentar cargar predicciones de las APIs
-                const predictions = await Promise.all(
-                    PREDICTION_VARS.map(v => fetchPrediction(v))
-                );
-
-                document.getElementById('predictionsLoading').style.display = 'none';
-                
-                // Verificar si alguna predicción tiene datos
-                const hasData = predictions.some(p => p.predictions && p.predictions.length > 0);
-                
-                if (hasData) {
-                    displayPredictions(predictions);
-                    showNotification('✅ Predicciones generadas');
-                } else {
-                    throw new Error('No se pudieron obtener predicciones');
-                }
-                
-            } catch (error) {
-                console.error('Error en predicciones:', error);
-                document.getElementById('predictionsLoading').style.display = 'none';
-                
-                // Mostrar mensaje amigable
-                document.getElementById('predictionsContainer').innerHTML = `
-                    <div class="card" style="text-align: center; padding: 2rem;">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
-                        <h3 style="color: var(--platinum); margin-bottom: 1rem;">Análisis Estadístico Local</h3>
-                        <p style="color: var(--text-light); margin-bottom: 1.5rem;">
-                            Las APIs de ML no están disponibles.<br>
-                            Generando predicciones mediante análisis estadístico de datos históricos.
-                        </p>
-                        <button class="btn btn-platinum" onclick="loadPredictionsFallback()">
-                            📈 Generar Análisis Estadístico
-                        </button>
-                    </div>
-                `;
-            }
-        }
-
-        // Función alternativa que usa solo datos de Firebase
-        async function loadPredictionsFallback() {
-            document.getElementById('predictionsLoading').style.display = 'block';
-            document.getElementById('predictionsContainer').innerHTML = '';
-
-            // Simular delay
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-            const predictions = PREDICTION_VARS.map(v => ({
-                ...v,
-                predictions: generateFallbackPredictions(v.api)
-            }));
-
-            document.getElementById('predictionsLoading').style.display = 'none';
-            displayPredictions(predictions);
-            showNotification('✅ Análisis estadístico completado');
-        }
-
-        async function fetchPrediction(variable) {
-            const url = `https://web-production-08364.up.railway.app/predict/?column=${variable.api}`;
-            
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 segundos timeout
-                
-                const response = await fetch(url, {
-                    signal: controller.signal,
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                    }
-                });
-                
-                clearTimeout(timeoutId);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-
-                const data = await response.json();
-                
-                // Manejar diferentes formatos de respuesta
-                let predictions = [];
-                if (data.predictions) {
-                    predictions = Array.isArray(data.predictions) ? data.predictions : [data.predictions];
-                } else if (data.prediction) {
-                    predictions = Array.isArray(data.prediction) ? data.prediction : [data.prediction];
-                } else if (Array.isArray(data)) {
-                    predictions = data;
-                } else if (typeof data === 'number') {
-                    predictions = [data];
-                } else {
-                    // Si no hay predicciones, generar datos simulados basados en últimas lecturas
-                    predictions = generateFallbackPredictions(variable.api);
-                }
-                
-                return {
-                    ...variable,
-                    predictions: predictions
-                };
-                
-            } catch (error) {
-                console.warn(`Error en ${variable.name}:`, error.message);
-                // Generar predicciones simuladas basadas en datos históricos
-                return {
-                    ...variable,
-                    predictions: generateFallbackPredictions(variable.api)
-                };
-            }
-        }
-
-        function generateFallbackPredictions(apiName) {
-            // Obtener últimas lecturas de Firebase
-            const recentData = allData.slice(0, 50);
-            
-            if (recentData.length === 0) {
-                // Si no hay datos, retornar valores por defecto
-                return [0, 0, 0, 0, 0, 0, 0];
-            }
-            
-            let values = [];
-            
-            // Extraer valores según la variable
-            switch(apiName) {
-                case 'MQ7':
-                    values = recentData.map(d => parseFloat(d.MQ7) || 0);
-                    break;
-                case 'MQ135':
-                    values = recentData.map(d => parseFloat(d.MQ135) || 0);
-                    break;
-                case 'PM1.0':
-                    values = recentData.map(d => parseFloat(d.PM1_0) || 0);
-                    break;
-                case 'PM2.5':
-                    values = recentData.map(d => parseFloat(d.PM2_5) || 0);
-                    break;
-                case 'PM10':
-                    values = recentData.map(d => parseFloat(d.PM10) || 0);
-                    break;
-                case 'Temperatura':
-                    values = recentData.map(d => parseFloat(d.Temperature) || 0);
-                    break;
-                case 'Presion':
-                    values = recentData.map(d => parseFloat(d.Pressure) || 0);
-                    break;
-                case 'Altitud':
-                    values = recentData.map(d => parseFloat(d.Altitude) || 0);
-                    break;
-                default:
-                    return [0, 0, 0, 0, 0, 0, 0];
-            }
-            
-            // Calcular promedio de las últimas lecturas
-            const avg = values.reduce((a, b) => a + b, 0) / values.length;
-            
-            // Calcular desviación estándar
-            const variance = values.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / values.length;
-            const stdDev = Math.sqrt(variance);
-            
-            // Generar predicciones con variación realista
-            const predictions = [];
-            for (let i = 0; i < 7; i++) {
-                // Añadir variación pequeña basada en desviación estándar
-                const variation = (Math.random() - 0.5) * stdDev * 0.3;
-                predictions.push(Math.max(0, avg + variation));
-            }
-            
-            return predictions;
-        }
-
-        function displayPredictions(predictions) {
-            const container = document.getElementById('predictionsContainer');
-            
-            container.innerHTML = predictions.map(pred => {
-                const values = Array.isArray(pred.predictions) ? pred.predictions : [pred.predictions];
-                const converted = values.map(v => pred.convert ? pred.convert(v).toFixed(2) : v.toFixed(2));
-                
-                return `
-                    <div class="prediction-card">
-                        <div class="prediction-header">
-                            <div class="prediction-title">${pred.name}</div>
-                            <div class="prediction-subtitle">Próximos 7 días</div>
-                        </div>
-                        <div class="prediction-grid">
-                            ${converted.map((val, idx) => `
-                                <div class="prediction-day">
-                                    <div class="prediction-day-label">Día ${idx + 1}</div>
-                                    <div class="prediction-day-value">${val}</div>
-                                    <div class="prediction-day-unit">${pred.unit}</div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // CONTINUACIÓN DEL CÓDIGO ORIGINAL (FILTROS, HISTORIAL, GRÁFICAS, etc.)
-        function filterTime(period) {
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            if (event && event.target) event.target.classList.add('active');
-
-            const now = new Date();
-            let startTime, endTime;
-
-            switch(period) {
-                case 'first50':
-                    filteredData = allData.slice(-50).reverse();
-                    break;
-                case 'today':
-                    startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-                    filteredData = allData.filter(d => d.timestamp >= startTime);
-                    break;
-                case 'yesterday':
-                    startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1).getTime();
-                    endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-                    filteredData = allData.filter(d => d.timestamp >= startTime && d.timestamp < endTime);
-                    break;
-                case 'week':
-                    startTime = now.getTime() - (7 * 24 * 60 * 60 * 1000);
-                    filteredData = allData.filter(d => d.timestamp >= startTime);
-                    break;
-                case 'month':
-                    startTime = now.getTime() - (30 * 24 * 60 * 60 * 1000);
-                    filteredData = allData.filter(d => d.timestamp >= startTime);
-                    break;
-                case 'all':
-                default:
-                    filteredData = [...allData];
-            }
-
-            document.getElementById('recordCount').textContent = filteredData.length;
-            updateHistoryTable();
-            updateCharts();
-        }
-
-        function filterCustomRange() {
-            const from = new Date(document.getElementById('dateFrom').value).getTime();
-            const to = new Date(document.getElementById('dateTo').value).getTime() + (24 * 60 * 60 * 1000);
-
-            if (isNaN(from) || isNaN(to)) {
-                alert('Por favor selecciona fechas válidas');
-                return;
-            }
-
-            filteredData = allData.filter(d => d.timestamp >= from && d.timestamp <= to);
-            document.getElementById('recordCount').textContent = filteredData.length;
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            updateHistoryTable();
-            updateCharts();
-        }
-
-        function updateHistoryTable() {
-            const tbody = document.getElementById('historyTable');
-            tbody.innerHTML = '';
-            
-            filteredData.forEach(item => {
-                const co = item.MQ7 ? (parseFloat(item.MQ7) * 0.005).toFixed(1) : '--';
-                const co2 = item.MQ135 ? (parseFloat(item.MQ135) * 0.5).toFixed(0) : '--';
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${new Date(item.timestamp).toLocaleString('es-MX')}</td>
-                    <td>${co}</td>
-                    <td>${co2}</td>
-                    <td>${item.PM1_0 || 0}</td>
-                    <td>${item.PM2_5 || 0}</td>
-                    <td>${item.PM10 || 0}</td>
-                    <td>${item.Temperature || '--'}</td>
-                    <td>${item.Pressure || '--'}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function exportExcel() {
-            const ws = XLSX.utils.json_to_sheet(allData.map(item => ({
-                ID: item.id,
-                Fecha: new Date(item.timestamp).toLocaleString('es-MX'),
-                CO_ppm: item.MQ7 ? (parseFloat(item.MQ7) * 0.005).toFixed(1) : '',
-                CO2_ppm: item.MQ135 ? (parseFloat(item.MQ135) * 0.5).toFixed(0) : '',
-                'PM1.0': item.PM1_0,
-                'PM2.5': item.PM2_5,
-                PM10: item.PM10,
-                Temperatura: item.Temperature,
-                Presión: item.Pressure,
-                Altitud: item.Altitude,
-                MQ7_raw: item.MQ7,
-                MQ135_raw: item.MQ135,
-                Timestamp: item.timestamp
-            })));
-            
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Historial');
-            XLSX.writeFile(wb, `AirGuard_${new Date().toISOString().split('T')[0]}.xlsx`);
-            alert(`✅ ${allData.length} registros exportados`);
-        }
-
-        function exportCSV() {
-            const csv = [
-                ['Fecha','CO','CO2','PM1.0','PM2.5','PM10','Temp','Presión','Alt','MQ7','MQ135'],
-                ...allData.map(item => [
-                    new Date(item.timestamp).toLocaleString('es-MX'),
-                    item.MQ7 ? (parseFloat(item.MQ7) * 0.005).toFixed(1) : '',
-                    item.MQ135 ? (parseFloat(item.MQ135) * 0.5).toFixed(0) : '',
-                    item.PM1_0, item.PM2_5, item.PM10,
-                    item.Temperature, item.Pressure, item.Altitude,
-                    item.MQ7, item.MQ135
-                ])
-            ].map(row => row.join(',')).join('\n');
-
-            const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `AirGuard_${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-            alert(`✅ ${allData.length} registros exportados`);
-        }
-
-        function showDeleteMenu() {
-            document.getElementById('deleteModal').style.display = 'flex';
-        }
-
-        function closeDeleteMenu() {
-            document.getElementById('deleteModal').style.display = 'none';
-        }
-
-        async function deleteRecent(count) {
-            const password = prompt(`🔒 Contraseña para borrar ${count}:`);
-            if (!password || password !== 'Monitoreo#2025') { 
-                if (password) alert('❌ Contraseña incorrecta'); 
-                closeDeleteMenu(); 
-                return; 
-            }
-            if (!confirm(`⚠️ ¿Borrar ${count} lecturas?\n\nBackup automático.`)) { 
-                closeDeleteMenu(); return; 
-            }
-
-            const backupData = allData.slice(0, count);
-            exportBackup(backupData, `Backup_${count}`);
-
-            try {
-                const deviceId = '0a10aced202194944a053768';
-                const toDelete = allData.slice(0, count);
-                
-                await Promise.all(toDelete.map(item => {
-                    const path = `dispositivos/${deviceId}/lecturas/${item.year}/${item.month}/${item.day}/${item.hour}/${item.id}`;
-                    return db.ref(path).remove();
-                }));
-                
-                alert(`✅ ${count} borradas. Backup guardado.`);
-                closeDeleteMenu();
-            } catch (error) {
-                alert('❌ Error: ' + error.message);
-            }
-        }
-
-        async function deleteAll() {
-            const password = prompt('🔒 Contraseña:');
-            if (!password || password !== 'Monitoreo#2025') { 
-                if (password) alert('❌ Incorrecta'); 
-                closeDeleteMenu(); return; 
-            }
-            
-            // Advertencia sobre reinicio de tiempo
-            alert('⚠️ ATENCIÓN: Al borrar TODOS los registros se reiniciará el tiempo conectado.');
-            
-            if (!confirm('⚠️ ¿Borrar TODO y reiniciar tiempo conectado?')) { closeDeleteMenu(); return; }
-            
-            const confirmText = prompt('Escribe: BORRAR TODO');
-            if (confirmText !== 'BORRAR TODO') { 
-                alert('❌ Cancelado'); closeDeleteMenu(); return; 
-            }
-
-            exportBackup(allData, 'Backup_COMPLETO');
-            try {
-                const deviceId = '0a10aced202194944a053768';
-                await db.ref(`dispositivos/${deviceId}/lecturas`).remove();
-                allData = []; filteredData = [];
-                
-                // Reiniciar tiempo conectado
+    }
+    function checkAlerts(values) {
+        if (values.CO > THRESHOLDS.CO.critical) showNotification(`⚠️ CO crítico: ${values.CO} ppm`);
+        if (values.CO2 > THRESHOLDS.CO2.critical) showNotification(`⚠️ CO2 crítico: ${values.CO2} ppm`);
+        if (values.PM1 > THRESHOLDS.PM1.critical) showNotification(`⚠️ PM1.0: ${values.PM1} µg/m³`);
+        if (values.PM25 > THRESHOLDS.PM25.critical) showNotification(`⚠️ PM2.5: ${values.PM25} µg/m³`);
+        if (values.PM10 > THRESHOLDS.PM10.critical) showNotification(`⚠️ PM10: ${values.PM10} µg/m³`);
+        if (values.Temp > THRESHOLDS.Temp.critical) showNotification(`⚠️ Temperatura: ${values.Temp}°C`);
+    }
+    function showNotification(text) {
+        const notif = document.getElementById('notification');
+        document.getElementById('notifText').textContent = text;
+        notif.classList.add('show');
+        setTimeout(() => notif.classList.remove('show'), 5000);
+    }
+    function updateBanner(status, text) {
+        const banner = document.getElementById('banner');
+        banner.className = `banner ${status}`;
+        banner.querySelector('.dot').className = `dot ${status}`;
+        document.getElementById('bannerText').textContent = text;
+        if (status === 'connected') {
+            if (!connectionStartTime) {
                 connectionStartTime = Date.now();
-                
-                updateHistoryTable(); 
-                updateCharts();
-                updatePeriodBanner();
-                
-                showNotification('✅ Todo borrado. Backup guardado. Tiempo conectado reiniciado.');
-                closeDeleteMenu();
-            } catch (error) {
-                alert('❌ Error: ' + error.message);
+                startConnectionTimer();
             }
+            document.getElementById('connectionTime').style.display = 'block';
+        } else {
+            document.getElementById('connectionTime').style.display = 'none';
         }
-
-        function exportBackup(data, filename) {
-            const ws = XLSX.utils.json_to_sheet(data.map(item => ({
-                ID: item.id, Fecha: new Date(item.timestamp).toLocaleString('es-MX'),
-                MQ7: item.MQ7, MQ135: item.MQ135, 'PM1.0': item.PM1_0,
-                'PM2.5': item.PM2_5, PM10: item.PM10, Temp: item.Temperature,
-                Presión: item.Pressure, Alt: item.Altitude, Timestamp: item.timestamp
-            })));
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Backup');
-            XLSX.writeFile(wb, `${filename}_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+    function startConnectionTimer() {
+        if (connectionTimer) clearInterval(connectionTimer);
+        connectionTimer = setInterval(() => {
+            if (!connectionStartTime) return;
+            const elapsed = Date.now() - connectionStartTime;
+            const hours = Math.floor(elapsed / 3600000);
+            const minutes = Math.floor((elapsed % 3600000) / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            const timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            document.getElementById('timeCounter').textContent = timeStr;
+        }, 1000);
+    }
+    function updatePeriodBanner() {
+        if (allData.length === 0) {
+            document.getElementById('periodBanner').style.display = 'none';
+            return;
         }
-
-        // CHARTS - 8 gráficas
-        function createCharts() {
-            const container = document.getElementById('chartsContainer');
-            const chartDefs = [
-                {id: 'CO', title: 'CO (Monóxido de Carbono)', color: '#5e5e5e', unit: 'ppm'},
-                {id: 'CO2', title: 'CO2 (Dióxido de Carbono)', color: '#0088CC', unit: 'ppm'},
-                {id: 'PM1', title: 'PM1.0 (Partículas Ultrafinas)', color: '#10B981', unit: 'µg/m³'},
-                {id: 'PM25', title: 'PM2.5 (Partículas Finas)', color: '#F59E0B', unit: 'µg/m³'},
-                {id: 'PM10', title: 'PM10 (Partículas Gruesas)', color: '#EF4444', unit: 'µg/m³'},
-                {id: 'Temp', title: 'Temperatura', color: '#10B981', unit: '°C'},
-                {id: 'Pressure', title: 'Presión Atmosférica', color: '#8B5CF6', unit: 'Pa'},
-                {id: 'PMAll', title: 'Material Particulado (PM1.0, PM2.5, PM10)', color: null, unit: 'µg/m³'}
-            ];
-
-            container.innerHTML = chartDefs.map(c => `
-                <div class="card">
-                    <div class="chart-wrapper">
-                        <div class="chart-title">${c.title}</div>
-                        <canvas id="chart${c.id}"></canvas>
+        const sorted = [...allData].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        const firstRecord = new Date(sorted[0].timestamp);
+        const lastRecord = new Date(sorted[sorted.length - 1].timestamp);
+        const formatDate = (date) => {
+            return date.toLocaleString('es-MX', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        };
+        document.getElementById('firstRecordDate').textContent = formatDate(firstRecord);
+        document.getElementById('lastRecordDate').textContent = formatDate(lastRecord);
+        const diffMs = lastRecord - firstRecord;
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        let durationStr = '';
+        if (diffDays > 0) durationStr += `${diffDays} día${diffDays > 1 ? 's' : ''}`;
+        if (diffHours > 0) durationStr += ` ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
+        if (diffDays === 0 && diffHours === 0 && diffMinutes > 0) durationStr += `${diffMinutes} minuto${diffMinutes > 1 ? 's' : ''}`;
+        document.getElementById('recordDuration').textContent = `Duración total: ${durationStr || 'Menos de 1 minuto'}`;
+        document.getElementById('periodBanner').style.display = 'block';
+    }
+    function toggleRegisterForm() {
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        if (loginForm.style.display === 'none') {
+            loginForm.style.display = 'block';
+            registerForm.style.display = 'none';
+            document.getElementById('loginError').textContent = '';
+            document.getElementById('loginError').classList.remove('show');
+        } else {
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+            document.getElementById('loginError').textContent = '';
+            document.getElementById('loginError').classList.remove('show');
+        }
+    }
+    function refreshData() {
+        console.log('🔄 Actualizando datos...');
+        showNotification('🔄 Actualizando datos...');
+    }
+    function checkForUpdates() {
+        console.log('✓ Verificación automática');
+    }
+    const PREDICTION_VARS = [
+        {api: 'MQ7', name: 'CO (Monóxido)', unit: 'ppm', convert: v => v * 0.005},
+        {api: 'MQ135', name: 'CO2 (Dióxido)', unit: 'ppm', convert: v => v * 0.5},
+        {api: 'PM1.0', name: 'PM1.0', unit: 'µg/m³', convert: v => v},
+        {api: 'PM2.5', name: 'PM2.5', unit: 'µg/m³', convert: v => v},
+        {api: 'PM10', name: 'PM10', unit: 'µg/m³', convert: v => v},
+        {api: 'Temperatura', name: 'Temperatura', unit: '°C', convert: v => v},
+        {api: 'Presion', name: 'Presión', unit: 'Pa', convert: v => v},
+        {api: 'Altitud', name: 'Altitud', unit: 'm', convert: v => v}
+    ];
+    async function loadPredictions() {
+        if (!navigator.onLine) {
+            alert('⚠️ Necesitas conexión a internet para generar predicciones');
+            return;
+        }
+        if (allData.length === 0) {
+            alert('⚠️ No hay datos históricos. Espera a que se carguen datos de Firebase.');
+            return;
+        }
+        document.getElementById('predictionsLoading').style.display = 'block';
+        document.getElementById('predictionsContainer').innerHTML = '';
+        try {
+            showNotification('📊 Analizando datos históricos...');
+            const predictions = await Promise.all(
+                PREDICTION_VARS.map(v => fetchPrediction(v))
+            );
+            document.getElementById('predictionsLoading').style.display = 'none';
+            const hasData = predictions.some(p => p.predictions && p.predictions.length > 0);
+            if (hasData) {
+                displayPredictions(predictions);
+                showNotification('✅ Predicciones generadas');
+            } else {
+                throw new Error('No se pudieron obtener predicciones');
+            }
+        } catch (error) {
+            console.error('Error en predicciones:', error);
+            document.getElementById('predictionsLoading').style.display = 'none';
+            document.getElementById('predictionsContainer').innerHTML = `
+                <div class="card" style="text-align: center; padding: 2rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
+                    <h3 style="color: var(--platinum); margin-bottom: 1rem;">Análisis Estadístico Local</h3>
+                    <p style="color: var(--text-light); margin-bottom: 1.5rem;">
+                        Las APIs de ML no están disponibles.<br>
+                        Generando predicciones mediante análisis estadístico de datos históricos.
+                    </p>
+                    <button class="btn btn-platinum" onclick="loadPredictionsFallback()">
+                        📈 Generar Análisis Estadístico
+                    </button>
+                </div>
+            `;
+        }
+    }
+    async function loadPredictionsFallback() {
+        document.getElementById('predictionsLoading').style.display = 'block';
+        document.getElementById('predictionsContainer').innerHTML = '';
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const predictions = PREDICTION_VARS.map(v => ({
+            ...v,
+            predictions: generateFallbackPredictions(v.api)
+        }));
+        document.getElementById('predictionsLoading').style.display = 'none';
+        displayPredictions(predictions);
+        showNotification('✅ Análisis estadístico completado');
+    }
+    async function fetchPrediction(variable) {
+        const url = `https://web-production-08364.up.railway.app/predict/?column=${variable.api}`;
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000);
+            const response = await fetch(url, {
+                signal: controller.signal,
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                }
+            });
+            clearTimeout(timeoutId);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            const data = await response.json();
+            let predictions = [];
+            if (data.predictions) {
+                predictions = Array.isArray(data.predictions) ? data.predictions : [data.predictions];
+            } else if (data.prediction) {
+                predictions = Array.isArray(data.prediction) ? data.prediction : [data.prediction];
+            } else if (Array.isArray(data)) {
+                predictions = data;
+            } else if (typeof data === 'number') {
+                predictions = [data];
+            } else {
+                predictions = generateFallbackPredictions(variable.api);
+            }
+            return {
+                ...variable,
+                predictions: predictions
+            };
+        } catch (error) {
+            console.warn(`Error en ${variable.name}:`, error.message);
+            return {
+                ...variable,
+                predictions: generateFallbackPredictions(variable.api)
+            };
+        }
+    }
+    function generateFallbackPredictions(apiName) {
+        const recentData = allData.slice(0, 50);
+        if (recentData.length === 0) {
+            return [0, 0, 0, 0, 0, 0, 0];
+        }
+        let values = [];
+        switch(apiName) {
+            case 'MQ7': values = recentData.map(d => parseFloat(d.MQ7) || 0); break;
+            case 'MQ135': values = recentData.map(d => parseFloat(d.MQ135) || 0); break;
+            case 'PM1.0': values = recentData.map(d => parseFloat(d.PM1_0) || 0); break;
+            case 'PM2.5': values = recentData.map(d => parseFloat(d.PM2_5) || 0); break;
+            case 'PM10': values = recentData.map(d => parseFloat(d.PM10) || 0); break;
+            case 'Temperatura': values = recentData.map(d => parseFloat(d.Temperature) || 0); break;
+            case 'Presion': values = recentData.map(d => parseFloat(d.Pressure) || 0); break;
+            case 'Altitud': values = recentData.map(d => parseFloat(d.Altitude) || 0); break;
+            default: return [0, 0, 0, 0, 0, 0, 0];
+        }
+        const avg = values.reduce((a, b) => a + b, 0) / values.length;
+        const variance = values.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / values.length;
+        const stdDev = Math.sqrt(variance);
+        const predictions = [];
+        for (let i = 0; i < 7; i++) {
+            const variation = (Math.random() - 0.5) * stdDev * 0.3;
+            predictions.push(Math.max(0, avg + variation));
+        }
+        return predictions;
+    }
+    function displayPredictions(predictions) {
+        const container = document.getElementById('predictionsContainer');
+        container.innerHTML = predictions.map(pred => {
+            const values = Array.isArray(pred.predictions) ? pred.predictions : [pred.predictions];
+            const converted = values.map(v => pred.convert ? pred.convert(v).toFixed(2) : v.toFixed(2));
+            return `
+                <div class="prediction-card">
+                    <div class="prediction-header">
+                        <div class="prediction-title">${pred.name}</div>
+                        <div class="prediction-subtitle">Próximos 7 días</div>
+                    </div>
+                    <div class="prediction-grid">
+                        ${converted.map((val, idx) => `
+                            <div class="prediction-day">
+                                <div class="prediction-day-label">Día ${idx + 1}</div>
+                                <div class="prediction-day-value">${val}</div>
+                                <div class="prediction-day-unit">${pred.unit}</div>
+                            </div>
+                        `).join('')}
                     </div>
                 </div>
-            `).join('');
-
-            chartDefs.forEach(c => {
-                const ctx = document.getElementById('chart' + c.id).getContext('2d');
-                if (c.id === 'PMAll') {
-                    charts[c.id] = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: [],
-                            datasets: [
-                                {label: 'PM1.0', data: [], borderColor: '#10B981', tension: 0.4, fill: false},
-                                {label: 'PM2.5', data: [], borderColor: '#F59E0B', tension: 0.4, fill: false},
-                                {label: 'PM10', data: [], borderColor: '#EF4444', tension: 0.4, fill: false}
-                            ]
-                        },
-                        options: getChartOptions()
-                    });
-                } else {
-                    charts[c.id] = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: [],
-                            datasets: [{
-                                label: c.title.split('(')[0].trim(),
-                                data: [],
-                                borderColor: c.color,
-                                tension: 0.4,
-                                fill: false
-                            }]
-                        },
-                        options: getChartOptions()
-                    });
-                }
-            });
-        }
-
-        function getChartOptions() {
-            return {
-                responsive: true,
-                maintainAspectRatio: true,
-                interaction: {mode: 'index', intersect: false},
-                plugins: {
-                    legend: {display: true, position: 'top'},
-                    tooltip: {mode: 'index', intersect: false}
-                },
-                scales: {
-                    x: {
-                        display: true,
-                        grid: {display: true, color: 'rgba(0, 0, 0, 0.05)'},
-                        ticks: {maxRotation: 45, minRotation: 45, autoSkip: true, maxTicksLimit: 15}
-                    },
-                    y: {
-                        display: true,
-                        grid: {display: true, color: 'rgba(0, 0, 0, 0.05)'}
-                    }
-                }
-            };
-        }
-
-        function setChartRange(range) {
-            chartRange = range;
-            document.querySelectorAll('.chart-btn').forEach(btn => btn.classList.remove('active'));
-            if (event && event.target) event.target.classList.add('active');
-            updateCharts();
-        }
-
-        function filterChartCustomRange() {
-            const from = new Date(document.getElementById('chartDateFrom').value).getTime();
-            const to = new Date(document.getElementById('chartDateTo').value).getTime() + (24 * 60 * 60 * 1000);
-
-            if (isNaN(from) || isNaN(to)) {
-                alert('Fechas válidas requeridas');
-                return;
-            }
-
-            chartRange = 'custom';
-            window.customChartRange = {from, to};
-            document.querySelectorAll('.chart-btn').forEach(btn => btn.classList.remove('active'));
-            updateCharts();
-        }
-
-        function updateCharts() {
-            let data = [];
-            const now = new Date();
-
-            switch(chartRange) {
-                case 'last7': data = filteredData.slice(0, 7); break;
-                case 'last10': data = filteredData.slice(0, 10); break;
-                case 'last50': data = filteredData.slice(0, 50); break;
-                case 'last100': data = filteredData.slice(0, 100); break;
-                case 'hour':
-                    data = filteredData.filter(d => d.timestamp >= (now.getTime() - 3600000));
-                    break;
-                case 'day':
-                    data = filteredData.filter(d => d.timestamp >= new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime());
-                    break;
-                case 'week':
-                    data = filteredData.filter(d => d.timestamp >= (now.getTime() - 7*24*60*60*1000));
-                    break;
-                case 'custom':
-                    if (window.customChartRange) {
-                        data = filteredData.filter(d => d.timestamp >= window.customChartRange.from && d.timestamp <= window.customChartRange.to);
-                    }
-                    break;
-                default:
-                    data = filteredData.slice(0, 50);
-            }
-
-            data = data.reverse();
-            document.getElementById('chartDataCount').textContent = data.length;
-
-            const labels = data.map(d => {
-                const date = new Date(d.timestamp);
-                if (['last7','last10','last50','last100','hour'].includes(chartRange)) {
-                    return date.toLocaleTimeString('es-MX', {hour: '2-digit', minute: '2-digit'});
-                }
-                return date.toLocaleDateString('es-MX', {month: '2-digit', day: '2-digit', hour: '2-digit'});
-            });
-
-            charts.CO.data.labels = labels;
-            charts.CO.data.datasets[0].data = data.map(d => d.MQ7 ? parseFloat(d.MQ7) * 0.005 : 0);
-            charts.CO.update();
-
-            charts.CO2.data.labels = labels;
-            charts.CO2.data.datasets[0].data = data.map(d => d.MQ135 ? parseFloat(d.MQ135) * 0.5 : 400);
-            charts.CO2.update();
-
-            charts.PM1.data.labels = labels;
-            charts.PM1.data.datasets[0].data = data.map(d => parseFloat(d.PM1_0) || 0);
-            charts.PM1.update();
-
-            charts.PM25.data.labels = labels;
-            charts.PM25.data.datasets[0].data = data.map(d => parseFloat(d.PM2_5) || 0);
-            charts.PM25.update();
-
-            charts.PM10.data.labels = labels;
-            charts.PM10.data.datasets[0].data = data.map(d => parseFloat(d.PM10) || 0);
-            charts.PM10.update();
-
-            charts.Temp.data.labels = labels;
-            charts.Temp.data.datasets[0].data = data.map(d => parseFloat(d.Temperature) || 0);
-            charts.Temp.update();
-
-            charts.Pressure.data.labels = labels;
-            charts.Pressure.data.datasets[0].data = data.map(d => parseFloat(d.Pressure) || 0);
-            charts.Pressure.update();
-
-            charts.PMAll.data.labels = labels;
-            charts.PMAll.data.datasets[0].data = data.map(d => parseFloat(d.PM1_0) || 0);
-            charts.PMAll.data.datasets[1].data = data.map(d => parseFloat(d.PM2_5) || 0);
-            charts.PMAll.data.datasets[2].data = data.map(d => parseFloat(d.PM10) || 0);
-            charts.PMAll.update();
-        }
-
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-            document.getElementById(tab).classList.add('active');
-            if (event && event.target) event.target.closest('.tab').classList.add('active');
-        }
-
-        // REPORTE PDF
-        function generateReport() {
-            if (!navigator.onLine) {
-                alert('⚠️ Necesitas conexión a internet para generar el reporte');
-                return;
-            }
-
-            if (typeof jspdf === 'undefined') {
-                const script = document.createElement('script');
-                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-                script.onload = () => setTimeout(generateReportPDF, 500);
-                document.head.appendChild(script);
-            } else {
-                generateReportPDF();
-            }
-        }
-
-        function generateReportPDF() {
-            try {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-                
-                doc.setFontSize(20);
-                doc.setFont('helvetica', 'bold');
-                doc.text('AirGuard', 105, 20, {align: 'center'});
-                
-                doc.setFontSize(12);
-                doc.setFont('helvetica', 'normal');
-                doc.text('REPORTE OFICIAL DE MONITOREO AMBIENTAL', 105, 30, {align: 'center'});
-                doc.text('Instituto Tecnologico de Nuevo Leon', 105, 37, {align: 'center'});
-                
-                doc.setFontSize(10);
-                doc.text(`Fecha: ${new Date().toLocaleDateString('es-MX', {year: 'numeric', month: 'long', day: 'numeric'})}`, 105, 44, {align: 'center'});
-                doc.text(`Hora: ${new Date().toLocaleTimeString('es-MX')}`, 105, 50, {align: 'center'});
-                
-                doc.setDrawColor(94, 94, 94);
-                doc.setLineWidth(0.5);
-                doc.line(20, 55, 190, 55);
-                
-                doc.setFontSize(14);
-                doc.setFont('helvetica', 'bold');
-                doc.text('VALORES ACTUALES', 20, 65);
-                
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'normal');
-                let y = 75;
-                
-                const currentVals = [
-                    ['CO', document.getElementById('valCO').textContent + ' ppm', document.getElementById('statCO').textContent],
-                    ['CO2', document.getElementById('valCO2').textContent + ' ppm', document.getElementById('statCO2').textContent],
-                    ['PM1.0', document.getElementById('valPM1').textContent + ' ug/m3', document.getElementById('statPM1') ? document.getElementById('statPM1').textContent : 'N/A'],
-                    ['PM2.5', document.getElementById('valPM25').textContent + ' ug/m3', document.getElementById('statPM25').textContent],
-                    ['PM10', document.getElementById('valPM10').textContent + ' ug/m3', document.getElementById('statPM10').textContent],
-                    ['Temperatura', document.getElementById('valTemp').textContent + ' C', 'Normal'],
-                    ['Presion', document.getElementById('valPressure').textContent + ' Pa', 'Normal']
-                ];
-                
-                currentVals.forEach(([param, val, status]) => {
-                    doc.text(param + ':', 25, y);
-                    doc.setFont('helvetica', 'bold');
-                    doc.text(val, 80, y);
-                    doc.setFont('helvetica', 'normal');
-                    doc.text(`[${status}]`, 130, y);
-                    y += 7;
-                });
-                
-                y += 5;
-                doc.setFontSize(14);
-                doc.setFont('helvetica', 'bold');
-                doc.text('ESTADISTICAS', 20, y);
-                
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'normal');
-                y += 10;
-                doc.text(`Total de registros: ${allData.length}`, 25, y);
-                y += 7;
-                const periodoText = allData.length > 0 ? 
-                    `${new Date(allData[allData.length-1].timestamp).toLocaleDateString('es-MX')} - ${new Date(allData[0].timestamp).toLocaleDateString('es-MX')}` : 
-                    'N/A';
-                doc.text(`Periodo: ${periodoText}`, 25, y);
-                
-                doc.setFontSize(8);
-                doc.setTextColor(100);
-                doc.text('Reporte generado por AirGuard', 105, 280, {align: 'center'});
-                doc.text('Instituto Tecnologico de Nuevo Leon', 105, 285, {align: 'center'});
-                
-                const fileName = `Reporte_AirGuard_${new Date().toISOString().split('T')[0]}.pdf`;
-                
-                // Detectar Android
-                const isAndroid = /android/i.test(navigator.userAgent);
-                
-                if (isAndroid) {
-                    const pdfBlob = doc.output('blob');
-                    const url = URL.createObjectURL(pdfBlob);
-                    
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = fileName;
-                    link.style.display = 'none';
-                    document.body.appendChild(link);
-                    link.click();
-                    
-                    setTimeout(() => {
-                        document.body.removeChild(link);
-                        URL.revokeObjectURL(url);
-                    }, 100);
-                    
-                    showNotification('✅ Reporte descargado. Revisa tu carpeta de Descargas');
-                } else {
-                    doc.save(fileName);
-                    showNotification('✅ Reporte PDF generado');
-                }
-                
-            } catch (error) {
-                console.error('Error generando PDF:', error);
-                alert('❌ Error al generar reporte: ' + error.message);
-            }
-        }
-
-
-
-        
-// ====== QUITAR SPLASH Y MOSTRAR LOGIN DESPUÉS DE 2.8 SEGUNDOS ======
-setTimeout(() => {
-    document.getElementById('splash').classList.add('hide');
-    setTimeout(() => {
-        document.getElementById('splash').remove();
-       document.getElementById('loginContainer').style.display = 'flex';
-    }, 900);
-}, 2800);
-
-
-
-// ====== DETECCIÓN DE WEBVIEW PARA DESCARGAS ======
-(function() {
-    // Detectar si está en App Inventor WebView
-    const isInAppInventor = /Android/i.test(navigator.userAgent) && 
-                            window.location.protocol === 'file:';
-    
-    if (isInAppInventor) {
-        console.log('📱 Ejecutando en App Inventor');
-        
-        // Interceptar todos los enlaces de descarga
-        document.addEventListener('click', function(e) {
-            const target = e.target.closest('a, button');
-            if (!target) return;
-            
-            // Si es un botón de descarga
-            const isDownloadButton = target.textContent.includes('Excel') || 
-                                    target.textContent.includes('CSV') || 
-                                    target.textContent.includes('Reporte') ||
-                                    target.textContent.includes('📊') ||
-                                    target.textContent.includes('📄') ||
-                                    target.onclick;
-            
-            if (isDownloadButton) {
-                console.log('✅ Descarga detectada en WebView');
-                // Permitir que la descarga continúe normalmente
-                setTimeout(() => {
-                    alert('📥 Archivo generado. Revisa tu carpeta de Descargas.');
-                }, 500);
-            }
-        }, true);
+            `;
+        }).join('');
     }
-})();
+    function filterTime(period) {
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        if (event && event.target) event.target.classList.add('active');
+        const now = new Date();
+        let startTime, endTime;
+        switch(period) {
+            case 'first50':
+                filteredData = allData.slice(-50).reverse();
+                break;
+            case 'today':
+                startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                filteredData = allData.filter(d => d.timestamp >= startTime);
+                break;
+            case 'yesterday':
+                startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1).getTime();
+                endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                filteredData = allData.filter(d => d.timestamp >= startTime && d.timestamp < endTime);
+                break;
+            case 'week':
+                startTime = now.getTime() - (7 * 24 * 60 * 60 * 1000);
+                filteredData = allData.filter(d => d.timestamp >= startTime);
+                break;
+            case 'month':
+                startTime = now.getTime() - (30 * 24 * 60 * 60 * 1000);
+                filteredData = allData.filter(d => d.timestamp >= startTime);
+                break;
+            case 'all':
+            default:
+                filteredData = [...allData];
+        }
+        document.getElementById('recordCount').textContent = filteredData.length;
+        updateHistoryTable();
+        updateCharts();
+    }
+    function filterCustomRange() {
+        const from = new Date(document.getElementById('dateFrom').value).getTime();
+        const to = new Date(document.getElementById('dateTo').value).getTime() + (24 * 60 * 60 * 1000);
+        if (isNaN(from) || isNaN(to)) {
+            alert('Por favor selecciona fechas válidas');
+            return;
+        }
+        filteredData = allData.filter(d => d.timestamp >= from && d.timestamp <= to);
+        document.getElementById('recordCount').textContent = filteredData.length;
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        updateHistoryTable();
+        updateCharts();
+    }
+    function updateHistoryTable() {
+        const tbody = document.getElementById('historyTable');
+        tbody.innerHTML = '';
+        filteredData.forEach(item => {
+            const co = item.MQ7 ? (parseFloat(item.MQ7) * 0.005).toFixed(1) : '--';
+            const co2 = item.MQ135 ? (parseFloat(item.MQ135) * 0.5).toFixed(0) : '--';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${new Date(item.timestamp).toLocaleString('es-MX')}</td>
+                <td>${co}</td>
+                <td>${co2}</td>
+                <td>${item.PM1_0 || 0}</td>
+                <td>${item.PM2_5 || 0}</td>
+                <td>${item.PM10 || 0}</td>
+                <td>${item.Temperature || '--'}</td>
+                <td>${item.Pressure || '--'}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+    // === CAMBIO PARA APK: EXPORT CSV ===
+    function exportCSV() {
+        const csv = [
+            ['Fecha','CO','CO2','PM1.0','PM2.5','PM10','Temp','Presión','Alt','MQ7','MQ135'],
+            ...allData.map(item => [
+                new Date(item.timestamp).toLocaleString('es-MX'),
+                item.MQ7 ? (parseFloat(item.MQ7) * 0.005).toFixed(1) : '',
+                item.MQ135 ? (parseFloat(item.MQ135) * 0.5).toFixed(0) : '',
+                item.PM1_0, item.PM2_5, item.PM10,
+                item.Temperature, item.Pressure, item.Altitude,
+                item.MQ7, item.MQ135
+            ])
+        ].map(row => row.join(',')).join('\n');
+        const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+        const url = URL.createObjectURL(blob);
+        window.location.href = url;
+        alert(`✅ ${allData.length} registros exportados`);
+    }
+    // === CAMBIO PARA APK: EXPORT EXCEL ===
+    function exportExcel() {
+        const ws = XLSX.utils.json_to_sheet(allData.map(item => ({
+            ID: item.id,
+            Fecha: new Date(item.timestamp).toLocaleString('es-MX'),
+            CO_ppm: item.MQ7 ? (parseFloat(item.MQ7) * 0.005).toFixed(1) : '',
+            CO2_ppm: item.MQ135 ? (parseFloat(item.MQ135) * 0.5).toFixed(0) : '',
+            'PM1.0': item.PM1_0,
+            'PM2.5': item.PM2_5,
+            PM10: item.PM10,
+            Temperatura: item.Temperature,
+            Presión: item.Pressure,
+            Altitud: item.Altitude,
+            MQ7_raw: item.MQ7,
+            MQ135_raw: item.MQ135,
+            Timestamp: item.timestamp
+        })));
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Historial');
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([wbout], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+        window.location.href = url;
+        alert(`✅ ${allData.length} registros exportados`);
+    }
+    function showDeleteMenu() {
+        document.getElementById('deleteModal').style.display = 'flex';
+    }
+    function closeDeleteMenu() {
+        document.getElementById('deleteModal').style.display = 'none';
+    }
+    async function deleteRecent(count) {
+        const password = prompt(`🔒 Contraseña para borrar ${count}:`);
+        if (!password || password !== 'Monitoreo#2025') {
+            if (password) alert('❌ Contraseña incorrecta');
+            closeDeleteMenu();
+            return;
+        }
+        if (!confirm(`⚠️ ¿Borrar ${count} lecturas?\n\nBackup automático.`)) {
+            closeDeleteMenu(); return;
+        }
+        const backupData = allData.slice(0, count);
+        exportBackup(backupData, `Backup_${count}`);
+        try {
+            const deviceId = '0a10aced202194944a053768';
+            const toDelete = allData.slice(0, count);
+            await Promise.all(toDelete.map(item => {
+                const path = `dispositivos/${deviceId}/lecturas/${item.year}/${item.month}/${item.day}/${item.hour}/${item.id}`;
+                return db.ref(path).remove();
+            }));
+            alert(`✅ ${count} borradas. Backup guardado.`);
+            closeDeleteMenu();
+        } catch (error) {
+            alert('❌ Error: ' + error.message);
+        }
+    }
+    async function deleteAll() {
+        const password = prompt('🔒 Contraseña:');
+        if (!password || password !== 'Monitoreo#2025') {
+            if (password) alert('❌ Incorrecta');
+            closeDeleteMenu(); return;
+        }
+        alert('⚠️ ATENCIÓN: Al borrar TODOS los registros se reiniciará el tiempo conectado.');
+        if (!confirm('⚠️ ¿Borrar TODO y reiniciar tiempo conectado?')) { closeDeleteMenu(); return; }
+        const confirmText = prompt('Escribe: BORRAR TODO');
+        if (confirmText !== 'BORRAR TODO') {
+            alert('❌ Cancelado'); closeDeleteMenu(); return;
+        }
+        exportBackup(allData, 'Backup_COMPLETO');
+        try {
+            const deviceId = '0a10aced202194944a053768';
+            await db.ref(`dispositivos/${deviceId}/lecturas`).remove();
+            allData = []; filteredData = [];
+            connectionStartTime = Date.now();
+            updateHistoryTable();
+            updateCharts();
+            updatePeriodBanner();
+            showNotification('✅ Todo borrado. Backup guardado. Tiempo conectado reiniciado.');
+            closeDeleteMenu();
+        } catch (error) {
+            alert('❌ Error: ' + error.message);
+        }
+    }
+    function exportBackup(data, filename) {
+        const ws = XLSX.utils.json_to_sheet(data.map(item => ({
+            ID: item.id, Fecha: new Date(item.timestamp).toLocaleString('es-MX'),
+            MQ7: item.MQ7, MQ135: item.MQ135, 'PM1.0': item.PM1_0,
+            'PM2.5': item.PM2_5, PM10: item.PM10, Temp: item.Temperature,
+            Presión: item.Pressure, Alt: item.Altitude, Timestamp: item.timestamp
+        })));
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Backup');
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([wbout], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+        window.location.href = url;
+    }
+    function createCharts() {
+        const container = document.getElementById('chartsContainer');
+        const chartDefs = [
+            {id: 'CO', title: 'CO (Monóxido de Carbono)', color: '#5e5e5e', unit: 'ppm'},
+            {id: 'CO2', title: 'CO2 (Dióxido de Carbono)', color: '#0088CC', unit: 'ppm'},
+            {id: 'PM1', title: 'PM1.0 (Partículas Ultrafinas)', color: '#10B981', unit: 'µg/m³'},
+            {id: 'PM25', title: 'PM2.5 (Partículas Finas)', color: '#F59E0B', unit: 'µg/m³'},
+            {id: 'PM10', title: 'PM10 (Partículas Gruesas)', color: '#EF4444', unit: 'µg/m³'},
+            {id: 'Temp', title: 'Temperatura', color: '#10B981', unit: '°C'},
+            {id: 'Pressure', title: 'Presión Atmosférica', color: '#8B5CF6', unit: 'Pa'},
+            {id: 'PMAll', title: 'Material Particulado (PM1.0, PM2.5, PM10)', color: null, unit: 'µg/m³'}
+        ];
+        container.innerHTML = chartDefs.map(c => `
+            <div class="card">
+                <div class="chart-wrapper">
+                    <div class="chart-title">${c.title}</div>
+                    <canvas id="chart${c.id}"></canvas>
+                </div>
+            </div>
+        `).join('');
+        chartDefs.forEach(c => {
+            const ctx = document.getElementById('chart' + c.id).getContext('2d');
+            if (c.id === 'PMAll') {
+                charts[c.id] = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [
+                            {label: 'PM1.0', data: [], borderColor: '#10B981', tension: 0.4, fill: false},
+                            {label: 'PM2.5', data: [], borderColor: '#F59E0B', tension: 0.4, fill: false},
+                            {label: 'PM10', data: [], borderColor: '#EF4444', tension: 0.4, fill: false}
+                        ]
+                    },
+                    options: getChartOptions()
+                });
+            } else {
+                charts[c.id] = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: c.title.split('(')[0].trim(),
+                            data: [],
+                            borderColor: c.color,
+                            tension: 0.4,
+                            fill: false
+                        }]
+                    },
+                    options: getChartOptions()
+                });
+            }
+        });
+    }
+    function getChartOptions() {
+        return {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: {mode: 'index', intersect: false},
+            plugins: {
+                legend: {display: true, position: 'top'},
+                tooltip: {mode: 'index', intersect: false}
+            },
+            scales: {
+                x: {
+                    display: true,
+                    grid: {display: true, color: 'rgba(0, 0, 0, 0.05)'},
+                    ticks: {maxRotation: 45, minRotation: 45, autoSkip: true, maxTicksLimit: 15}
+                },
+                y: {
+                    display: true,
+                    grid: {display: true, color: 'rgba(0, 0, 0, 0.05)'}
+                }
+            }
+        };
+    }
+    function setChartRange(range) {
+        chartRange = range;
+        document.querySelectorAll('.chart-btn').forEach(btn => btn.classList.remove('active'));
+        if (event && event.target) event.target.classList.add('active');
+        updateCharts();
+    }
+    function filterChartCustomRange() {
+        const from = new Date(document.getElementById('chartDateFrom').value).getTime();
+        const to = new Date(document.getElementById('chartDateTo').value).getTime() + (24 * 60 * 60 * 1000);
+        if (isNaN(from) || isNaN(to)) {
+            alert('Fechas válidas requeridas');
+            return;
+        }
+        chartRange = 'custom';
+        window.customChartRange = {from, to};
+        document.querySelectorAll('.chart-btn').forEach(btn => btn.classList.remove('active'));
+        updateCharts();
+    }
+    function updateCharts() {
+        let data = [];
+        const now = new Date();
+        switch(chartRange) {
+            case 'last7': data = filteredData.slice(0, 7); break;
+            case 'last10': data = filteredData.slice(0, 10); break;
+            case 'last50': data = filteredData.slice(0, 50); break;
+            case 'last100': data = filteredData.slice(0, 100); break;
+            case 'hour':
+                data = filteredData.filter(d => d.timestamp >= (now.getTime() - 3600000));
+                break;
+            case 'day':
+                data = filteredData.filter(d => d.timestamp >= new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime());
+                break;
+            case 'week':
+                data = filteredData.filter(d => d.timestamp >= (now.getTime() - 7*24*60*60*1000));
+                break;
+            case 'custom':
+                if (window.customChartRange) {
+                    data = filteredData.filter(d => d.timestamp >= window.customChartRange.from && d.timestamp <= window.customChartRange.to);
+                }
+                break;
+            default:
+                data = filteredData.slice(0, 50);
+        }
+        data = data.reverse();
+        document.getElementById('chartDataCount').textContent = data.length;
+        const labels = data.map(d => {
+            const date = new Date(d.timestamp);
+            if (['last7','last10','last50','last100','hour'].includes(chartRange)) {
+                return date.toLocaleTimeString('es-MX', {hour: '2-digit', minute: '2-digit'});
+            }
+            return date.toLocaleDateString('es-MX', {month: '2-digit', day: '2-digit', hour: '2-digit'});
+        });
+        charts.CO.data.labels = labels;
+        charts.CO.data.datasets[0].data = data.map(d => d.MQ7 ? parseFloat(d.MQ7) * 0.005 : 0);
+        charts.CO.update();
+        charts.CO2.data.labels = labels;
+        charts.CO2.data.datasets[0].data = data.map(d => d.MQ135 ? parseFloat(d.MQ135) * 0.5 : 400);
+        charts.CO2.update();
+        charts.PM1.data.labels = labels;
+        charts.PM1.data.datasets[0].data = data.map(d => parseFloat(d.PM1_0) || 0);
+        charts.PM1.update();
+        charts.PM25.data.labels = labels;
+        charts.PM25.data.datasets[0].data = data.map(d => parseFloat(d.PM2_5) || 0);
+        charts.PM25.update();
+        charts.PM10.data.labels = labels;
+        charts.PM10.data.datasets[0].data = data.map(d => parseFloat(d.PM10) || 0);
+        charts.PM10.update();
+        charts.Temp.data.labels = labels;
+        charts.Temp.data.datasets[0].data = data.map(d => parseFloat(d.Temperature) || 0);
+        charts.Temp.update();
+        charts.Pressure.data.labels = labels;
+        charts.Pressure.data.datasets[0].data = data.map(d => parseFloat(d.Pressure) || 0);
+        charts.Pressure.update();
+        charts.PMAll.data.labels = labels;
+        charts.PMAll.data.datasets[0].data = data.map(d => parseFloat(d.PM1_0) || 0);
+        charts.PMAll.data.datasets[1].data = data.map(d => parseFloat(d.PM2_5) || 0);
+        charts.PMAll.data.datasets[2].data = data.map(d => parseFloat(d.PM10) || 0);
+        charts.PMAll.update();
+    }
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+        document.getElementById(tab).classList.add('active');
+        if (event && event.target) event.target.closest('.tab').classList.add('active');
+    }
+    // === CAMBIO PARA APK: GENERAR REPORTE PDF ===
+    function generateReport() {
+        if (!navigator.onLine) {
+            alert('⚠️ Necesitas conexión a internet para generar el reporte');
+            return;
+        }
+        if (typeof jspdf === 'undefined') {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+            script.onload = () => setTimeout(generateReportPDF, 500);
+            document.head.appendChild(script);
+        } else {
+            generateReportPDF();
+        }
+    }
+    function generateReportPDF() {
+        try {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFontSize(20);
+            doc.setFont('helvetica', 'bold');
+            doc.text('AirGuard', 105, 20, {align: 'center'});
+            doc.setFontSize(12);
+            doc.text('REPORTE OFICIAL DE MONITOREO AMBIENTAL', 105, 30, {align: 'center'});
+            doc.text('Instituto Tecnologico de Nuevo Leon', 105, 37, {align: 'center'});
+            doc.setFontSize(10);
+            doc.text(`Fecha: ${new Date().toLocaleDateString('es-MX', {year: 'numeric', month: 'long', day: 'numeric'})}`, 105, 44, {align: 'center'});
+            doc.text(`Hora: ${new Date().toLocaleTimeString('es-MX')}`, 105, 50, {align: 'center'});
+            doc.setDrawColor(94, 94, 94);
+            doc.setLineWidth(0.5);
+            doc.line(20, 55, 190, 55);
+            doc.setFontSize(14);
+            doc.text('VALORES ACTUALES', 20, 65);
+            doc.setFontSize(10);
+            let y = 75;
+            const currentVals = [
+                ['CO', document.getElementById('valCO').textContent + ' ppm', document.getElementById('statCO').textContent],
+                ['CO2', document.getElementById('valCO2').textContent + ' ppm', document.getElementById('statCO2').textContent],
+                ['PM1.0', document.getElementById('valPM1').textContent + ' ug/m3', document.getElementById('statPM1').textContent],
+                ['PM2.5', document.getElementById('valPM25').textContent + ' ug/m3', document.getElementById('statPM25').textContent],
+                ['PM10', document.getElementById('valPM10').textContent + ' ug/m3', document.getElementById('statPM10').textContent],
+                ['Temperatura', document.getElementById('valTemp').textContent + ' C', 'Normal'],
+                ['Presion', document.getElementById('valPressure').textContent + ' Pa', 'Normal']
+            ];
+            currentVals.forEach(([param, val, status]) => {
+                doc.text(param + ':', 25, y);
+                doc.setFont('helvetica', 'bold');
+                doc.text(val, 80, y);
+                doc.setFont('helvetica', 'normal');
+                doc.text(`[${status}]`, 130, y);
+                y += 7;
+            });
+            y += 5;
+            doc.setFontSize(14);
+            doc.text('ESTADISTICAS', 20, y);
+            doc.setFontSize(10);
+            y += 10;
+            doc.text(`Total de registros: ${allData.length}`, 25, y);
+            y += 7;
+            const periodoText = allData.length > 0 ?
+                `${new Date(allData[allData.length-1].timestamp).toLocaleDateString('es-MX')} - ${new Date(allData[0].timestamp).toLocaleDateString('es-MX')}` :
+                'N/A';
+            doc.text(`Periodo: ${periodoText}`, 25, y);
+            doc.setFontSize(8);
+            doc.setTextColor(100);
+            doc.text('Reporte generado por AirGuard', 105, 280, {align: 'center'});
+            doc.text('Instituto Tecnologico de Nuevo Leon', 105, 285, {align: 'center'});
+            const pdfBlob = doc.output('blob');
+            const url = URL.createObjectURL(pdfBlob);
+            window.location.href = url;
+            showNotification('✅ Reporte PDF generado');
+        } catch (error) {
+            console.error('Error generando PDF:', error);
+            alert('❌ Error al generar reporte: ' + error.message);
+        }
+    }
+    setTimeout(() => {
+        document.getElementById('splash').classList.add('hide');
+        setTimeout(() => {
+            document.getElementById('splash').remove();
+            document.getElementById('loginContainer').style.display = 'flex';
+        }, 900);
+    }, 2800);
+    (function() {
+        const isInAppInventor = /android/i.test(navigator.userAgent) &&
+                                window.location.protocol === 'file:';
+        if (isInAppInventor) {
+            console.log('📱 Ejecutando en App Inventor');
+            document.addEventListener('click', function(e) {
+                const target = e.target.closest('a, button');
+                if (!target) return;
+                const isDownloadButton = target.textContent.includes('Excel') ||
+                                        target.textContent.includes('CSV') ||
+                                        target.textContent.includes('Reporte') ||
+                                        target.textContent.includes('📊') ||
+                                        target.textContent.includes('📄') ||
+                                        target.onclick;
+                if (isDownloadButton) {
+                    console.log('✅ Descarga detectada en WebView');
+                    setTimeout(() => {
+                        alert('📥 Archivo generado. Revisa tu carpeta de Descargas.');
+                    }, 500);
+                }
+            }, true);
+        }
+    })();
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
+    }
+</script>
 
-
-    </script>
 </body>
 </html>
+
